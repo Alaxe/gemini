@@ -1,0 +1,27 @@
+{
+    "GAME_W": 800,
+    "GAME_H": 500,
+    "GRAVITY": 0,
+    "CAMERA_INTERPOLATION": 0.1,
+    "Player": {
+        "GRAVITY": 1600,
+        "MAX_VELOCITY": {
+            "x": 400,
+            "y": 1500
+        },
+        "WALK_VELOCITY": 800,
+        "AIR_VELOCITY": 300,
+        "JUMP_VELOCITY": 800,
+        "JUMP_INTERVAL_MS": 750
+    },
+    "Highlight": {
+        "Y": {
+            "min": -1,
+            "max": -1
+        },
+        "X": {
+            "min": 0,
+            "max": 2
+        }
+    }
+}
