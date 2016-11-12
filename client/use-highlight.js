@@ -1,21 +1,23 @@
 'use strict';
 const conf = require('./conf.json').Highlight;
 
-class UseHighlight extends Phaser.Graphics {
-    constructor(game, layer, player) {
+class UseManager extends Phaser.Graphics {
+    constructor(game, level, player) {
         super(game, 0, 0);
         super.lineStyle(2, 0xFFFFFF, 1);
         super.drawRect(1, 1, 30, 30);
 
         this.game.add.existing(this);
 
-        this.layer = layer;
+        this.layer = level.cableLayer;
         this.player = player;
 
         this.tile = null;
 
         this.useButton = this.game.input.keyboard.addKey(Phaser.KeyCode.E);
         this.onUse = new Phaser.Signal();
+
+        this.onUse.add(level.onUseTile.bind(level));
 
         this.useButton.onDown.add(key => {
             if (this.tile) {
@@ -33,9 +35,6 @@ class UseHighlight extends Phaser.Graphics {
             return;
         }
 
-        //let baseX = this.player.x - this.player.x % this.layer.game.tileWidth;
-        //let baseY = this.player.y - this.player.y % this.layer.game.tileHeight;
-
         let tileW = this.layer.map.tileWidth;
         let tileH = this.layer.map.tileHeight;
 
@@ -51,19 +50,11 @@ class UseHighlight extends Phaser.Graphics {
 
                 let curTile = this.layer.map.getTile(tileX, tileY, this.layer);
 
-                //console.log(tileX, tileY);
-
-                //console.log(curTile);
-                if (curTile) {
-                    //console.log('hello');
-                }
-
                 if ((curTile) && (curTile.properties.usable)) {
                     let xDist = this.player.x - (tileX + 0.5) * tileW;
                     let yDist = this.player.y - (tileY + 0.6) * tileH;
                     let curDist = Math.abs(xDist) + Math.abs(yDist);
 
-                    //console.log('bingo');
                     if ((this.tile == null) || (curDist < bestDist)) {
                         this.tile = curTile;
                         bestDist = curDist;
@@ -80,4 +71,4 @@ class UseHighlight extends Phaser.Graphics {
     }
 }
 
-module.exports = UseHighlight;
+module.exports = UseManager;

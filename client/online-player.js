@@ -1,6 +1,8 @@
 const Player = require('./player.js');
 const conf = require('./conf.json');
 
+let onlinePlayersById = {}
+
 class OnlinePlayer extends Player {
     constructor(game) {
         super(game);
@@ -10,8 +12,11 @@ class OnlinePlayer extends Player {
         this.meanSampleCnt = 0;
     }
 
-    add_keyframe(msg) {
-        //msg.time = this.game.time.now;
+    static handleKeyframeUpdate(msg) {
+
+    }
+
+    addKeyframe(msg) {
         this.keyframes.push(msg);
 
         if (this.keyframes.length == 1) {
@@ -25,7 +30,6 @@ class OnlinePlayer extends Player {
         this.meanSampleCnt++;
 
         this.meanTimeDiff += timeDiff / this.meanSampleCnt;
-        console.log(this.meanTimeDiff);
     }
     update() {
         let netNow = this.game.time.now
@@ -45,7 +49,7 @@ class OnlinePlayer extends Player {
             this.x = prev.x + (next.x - prev.x) * traversedPart;
             this.y = prev.y + (next.y - prev.y) * traversedPart;
         } else {
-            console.log('Not enough keyframes');
+            //console.log('Not enough keyframes');
             this.x = prev.x;
             this.y = prev.y;
         }

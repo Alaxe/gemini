@@ -17,8 +17,10 @@ class Room extends EventEmitter {
         let msg = receivedMsg;
         msg.playerId = ws.id;
 
+        if (msg.type === 'tileUpdate') {
+            console.log(msg);
+        }
         let msgStr = JSON.stringify(msg);
-        console.log(msg);
 
         for (let socket of this.players) {
             if (socket === ws) {
@@ -29,7 +31,7 @@ class Room extends EventEmitter {
             }, 100);*/
 
             socket.send(msgStr);
-            console.log('sent');
+            //console.log('sent');
         }
     }
 

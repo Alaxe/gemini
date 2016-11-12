@@ -29,6 +29,137 @@ module.exports={
 }
 
 },{}],2:[function(require,module,exports){
+function has_power(tile) {
+    return (tile != null) && ((tile.index & 1) == 0);
+}
+
+function power_off(tile) {
+    if (tile == null) {
+        return false;
+    } else if (!has_power(tile)) {
+        return false;
+    } else if (tile.properties.sourcesPower) {
+        return false;
+    } else {
+        tile.index--;
+        return true;
+    }
+}
+
+function power_on(tile) {
+    if (tile == null) {
+        return false;
+    } else if (has_power(tile)) {
+        return false;
+    } else {
+        tile.index++;
+        return true;
+    }
+}
+
+class Level {
+    constructor(game) {
+        this.onTileChange = new Phaser.Signal();
+
+        this.game = game;
+
+        this.map = this.game.add.tilemap('map');
+        this.map.addTilesetImage('platforms');
+        this.map.addTilesetImage('cables');
+
+        this.cableLayer = this.map.createLayer('cables');
+        this.cableLayer.resizeWorld();
+
+        this.platformLayer = this.map.createLayer('platforms');
+        this.platformLayer.resizeWorld();
+
+        this.map.setCollision(9, true, 'platforms');
+
+        this.simulatePower();
+    }
+
+    static useTile(tile) {
+        if (tile == null) {
+            return false;
+        } else if ((tile.index == 3) || (tile.index == 4)) {
+            tile.index += 2;
+            tile.properties.passesPower = true;
+            return true;
+        } else if ((tile.index == 5) || (tile.index == 6)) {
+            tile.index -= 2;
+            tile.properties.passesPower = false;
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    onUseTile(tile) {
+        if (this.constructor.useTile(tile)) {
+            this.simulatePower();
+            console.log(tile);
+            this.onTileChange.dispatch(tile);
+        }
+    }
+    onTileUpdate(msg) {
+        let tile = this.map.getTile(msg.x, msg.y, msg.layer, true);
+
+        tile.index = msg.index;
+        tile.properties = msg.properties;
+
+        this.map.putTile(tile, msg.x, msg.y, msg.layer);
+
+        if (msg.layer == 'cables') {
+            this.simulatePower();
+        }
+    }
+
+    simulatePower() {
+        let next = Array();
+
+        for (let x = 0;x < this.map.width;x++) {
+            for (let y = 0;y < this.map.height;y++) {
+                let tile = this.map.getTile(x, y, 'cables');
+
+                power_off(tile);
+
+                if ((tile) && (tile.properties.sourcesPower)) {
+                    next.push(tile);
+                }
+            }
+        }
+
+        const adjacent = [
+            {x: 1, y: 0},
+            {x: -1, y: 0},
+            {x: 0, y: 1},
+            {x: 0, y: -1}
+        ];
+
+        while (next.length > 0) {
+            let curTile = next[0];
+            next.shift();
+
+            if (!(curTile.properties.passesPower)) {
+                continue;
+            }
+
+            for (let offset of adjacent) {
+                let newX = curTile.x + offset.x;
+                let newY = curTile.y + offset.y;
+
+                let newTile = this.map.getTile(newX, newY, 'cables');
+                if (power_on(newTile)) {
+                    next.push(newTile);
+                }
+            }
+        }
+        this.cableLayer.dirty = true;
+    }
+}
+module.exports = Level;
+
+},{}],3:[function(require,module,exports){
 const conf = require('./conf.json');
 const Player = require('./player.js');
 
@@ -82,19 +213,118 @@ class LocalPlayer extends Player {
 
 module.exports = LocalPlayer;
 
-},{"./conf.json":1,"./player.js":6}],3:[function(require,module,exports){
+},{"./conf.json":1,"./player.js":9}],4:[function(require,module,exports){
 'use strict';
 let conf = require('./conf.json');
 let PlayState = require('./play-state.js');
 
-let game = new Phaser.Game(conf.GAME_W, conf.GAME_H, Phaser.AUTO, '');
+let game = new Phaser.Game(conf.GAME_W, conf.GAME_H, Phaser.WEBGL, '');
 
 game.state.add('play', new PlayState());
 game.state.start('play');
 
-},{"./conf.json":1,"./play-state.js":5}],4:[function(require,module,exports){
+},{"./conf.json":1,"./play-state.js":8}],5:[function(require,module,exports){
+class NetworkManager {
+    constructor(game) {
+        this.game = game;
+        this.ws = new WebSocket(`ws://${document.location.hostname}:7001`);
+
+        //this.onlinePlayers = {};
+        this.onKeyframeUpdate = new Phaser.Signal();
+        this.onTileUpdate = new Phaser.Signal();
+
+        const self = this;
+
+        this.ws.onopen = () => {
+            let url = window.parent.location.pathname;
+            console.log(url);
+
+            let gameId = url.substr(url.lastIndexOf('/') + 1);
+            self.ws.send(JSON.stringify({
+                type: 'connect',
+                gameId: gameId
+            }));
+        }
+
+        this.ws.onmessage = msgStr => {
+            let msg = JSON.parse(msgStr.data);
+
+            if (msg.type == 'keyframeUpdate') {
+                self.onKeyframeUpdate.dispatch(msg);
+            } else if (msg.type == 'tileUpdate') {
+                self.onTileUpdate.dispatch(msg);
+            } else {
+                console.log('Received unknown message', msg);
+            }
+        }
+    }
+
+    sendTileUpdate(tile) {
+        console.log(tile, tile.id);
+        this.send({
+            type: 'broadcast',
+            body: {
+                type: 'tileUpdate',
+                x: tile.x,
+                y: tile.y,
+                layer: tile.layer.name,
+                index: tile.index,
+                properties: tile.properties
+            }
+        });
+    }
+
+    sendKeyframe(player) {
+        this.send({
+            type: 'broadcast',
+            body: {
+                type: 'keyframeUpdate',
+                x: player.x,
+                y: player.y,
+                time: this.game.time.now
+            }
+        });
+    }
+
+    send(json) {
+        if (this.ws.readyState !== WebSocket.OPEN) {
+            return false;
+        } else {
+            this.ws.send(JSON.stringify(json));
+        }
+    }
+}
+
+module.exports = NetworkManager;
+
+},{}],6:[function(require,module,exports){
+const OnlinePlayer = require('./online-player.js');
+
+class OnlinePlayerManager {
+    constructor(game, network) {
+        this.game = game;
+        this.playersById = {}
+    }
+
+    getPlayerById(id) {
+        if (!(id in this.playersById)) {
+            this.playersById[id] = new OnlinePlayer(this.game);
+        }
+        return this.playersById[id];
+    }
+    
+    handleKeyframeUpdate(msg) {
+        let player = this.getPlayerById(msg.playerId);
+        player.addKeyframe(msg);
+    }
+}
+module.exports = OnlinePlayerManager;
+
+},{"./online-player.js":7}],7:[function(require,module,exports){
 const Player = require('./player.js');
 const conf = require('./conf.json');
+
+let onlinePlayersById = {}
 
 class OnlinePlayer extends Player {
     constructor(game) {
@@ -105,8 +335,11 @@ class OnlinePlayer extends Player {
         this.meanSampleCnt = 0;
     }
 
-    add_keyframe(msg) {
-        //msg.time = this.game.time.now;
+    static handleKeyframeUpdate(msg) {
+
+    }
+
+    addKeyframe(msg) {
         this.keyframes.push(msg);
 
         if (this.keyframes.length == 1) {
@@ -120,7 +353,6 @@ class OnlinePlayer extends Player {
         this.meanSampleCnt++;
 
         this.meanTimeDiff += timeDiff / this.meanSampleCnt;
-        console.log(this.meanTimeDiff);
     }
     update() {
         let netNow = this.game.time.now
@@ -140,7 +372,7 @@ class OnlinePlayer extends Player {
             this.x = prev.x + (next.x - prev.x) * traversedPart;
             this.y = prev.y + (next.y - prev.y) * traversedPart;
         } else {
-            console.log('Not enough keyframes');
+            //console.log('Not enough keyframes');
             this.x = prev.x;
             this.y = prev.y;
         }
@@ -149,124 +381,19 @@ class OnlinePlayer extends Player {
 
 module.exports = OnlinePlayer;
 
-},{"./conf.json":1,"./player.js":6}],5:[function(require,module,exports){
+},{"./conf.json":1,"./player.js":9}],8:[function(require,module,exports){
 'use strict';
 
 const conf = require('./conf.json');
+
 const Player = require('./player.js');
 const LocalPlayer = require('./local-player.js');
-const OnlinePlayer = require('./online-player.js');
+const OnlinePlayerManager = require('./online-player-manager.js');
+
+const NetworkManager = require('./network-manager.js');
+const Level = require('./level.js');
 const UseManager = require('./use-highlight.js');
 
-function has_power(tile) {
-    return (tile != null) && ((tile.index & 1) == 0);
-}
-
-function power_off(tile) {
-    if (tile == null) {
-        return false;
-    } else if (!has_power(tile)) {
-        return false;
-    } else if (tile.properties.sourcesPower) {
-        return false;
-    } else {
-        tile.index--;
-        return true;
-    }
-}
-
-function power_on(tile) {
-    if (tile == null) {
-        return false;
-    } else if (has_power(tile)) {
-        return false;
-    } else {
-        tile.index++;
-        return true;
-    }
-}
-
-function toggle_switch(tile) {
-    if (tile == null) {
-        return false;
-    } else if ((tile.index == 3) || (tile.index == 4)) {
-        tile.index += 2;
-        tile.properties.passesPower = true;
-        return true;
-    } else if ((tile.index == 5) || (tile.index == 6)) {
-        tile.index -= 2;
-        tile.properties.passesPower = false;
-
-        return true;
-    } else {
-        return false;
-    }
-}
-
-class NetworkManager {
-    constructor(game) {
-        this.game = game;
-        this.ws = new WebSocket(`ws://${document.location.hostname}:7001`);
-
-        this.onlinePlayers = {};
-
-        const self = this;
-
-        this.ws.onopen = () => {
-            let url = window.parent.location.pathname;
-
-            console.log(url);
-
-            let gameId = url.substr(url.lastIndexOf('/') + 1);
-            self.ws.send(JSON.stringify({
-                type: 'connect',
-                gameId: gameId
-            }));
-        }
-
-        this.ws.onmessage = msgStr => {
-            let msg = JSON.parse(msgStr.data);
-            //console.log('receive');
-            //console.log(msg);
-
-            if (msg.type == 'keyframeUpdate') {
-                self.keyframeUpdate(msg);
-            } else if (msg.type == 'levelUpdate') {
-
-            } else {
-                console.log('Received unknown message', msg);
-            }
-        }
-    }
-
-    keyframeUpdate(update) {
-        if (! (update.playerId in this.onlinePlayers)) {
-            this.onlinePlayers[update.playerId] = new OnlinePlayer(this.game);
-        }
-        this.onlinePlayers[update.playerId].add_keyframe(update);
-    }
-
-    levelUpdate(update) {
-    }
-
-    sendUpdate(player) {
-        if (this.ws.readyState !== WebSocket.OPEN) {
-            return;
-        }
-        //console.log('send');
-        let msg = {
-            type: 'broadcast',
-            body: {
-                type: 'keyframeUpdate',
-                x: player.x,
-                y: player.y,
-                time: this.game.time.now
-            }
-        };
-        //console.log(msg);
-        this.ws.send(JSON.stringify(msg));
-    }
-}
 
 class PlayState {
     constructor() {}
@@ -280,101 +407,42 @@ class PlayState {
         this.load.image('player', '../assets/player.png');
     }
     create() {
-        this.create_world();
+        this.physics.startSystem(Phaser.Physics.ARCADE);
+        this.physics.arcade.gravity.y = conf.GRAVITY;
+        
+        this.level = new Level(this.game);
 
         this.player = new LocalPlayer(this.game);
         this.camera.follow(this.player, Phaser.Camera.FOLLOW_LOCKON,
             conf.CAMERA_INTERPOLATION, conf.CAMERA_INTERPOLATION);
 
-
-        this.useButton = this.input.keyboard.addKey(Phaser.KeyCode.E);
-
-        this.useManager = new UseManager(this.game, this.cableLayer,
-                this.player);
-        this.useManager.onUse.add(tile => {
-            console.log('hi');
-            toggle_switch(tile);
-            this.simulate_power();
-        });
-
         this.network = new NetworkManager(this.game);
-    }
 
-    create_world() {
-        this.map = this.add.tilemap('map');
-        this.map.addTilesetImage('platforms');
-        this.map.addTilesetImage('cables');
+        this.useManager = new UseManager(this.game, this.level,
+                this.player);
 
-        this.cableLayer = this.map.createLayer('cables');
-        this.cableLayer.resizeWorld();
+        this.level.onTileChange.add(this.network.sendTileUpdate
+                .bind(this.network));
 
-        this.platformLayer = this.map.createLayer('platforms');
-        this.platformLayer.resizeWorld();
+        this.onlinePlayerManager = new OnlinePlayerManager(this.game);
+        this.network.onKeyframeUpdate.add(this
+            .onlinePlayerManager
+            .handleKeyframeUpdate
+            .bind(this.onlinePlayerManager));
 
-        this.physics.startSystem(Phaser.Physics.ARCADE);
-        this.physics.arcade.gravity.y = conf.GRAVITY;
-
-
-        //this.map.setCollision(1, true, 'platforms');
-        this.map.setCollision(9, true, 'platforms');
-
-        this.simulate_power();
-    }
-
-    simulate_power() {
-        let next = Array();
-
-        for (let x = 0;x < this.map.width;x++) {
-            for (let y = 0;y < this.map.height;y++) {
-                let tile = this.map.getTile(x, y, 'cables');
-
-                power_off(tile);
-
-                if ((tile) && (tile.properties.sourcesPower)) {
-                    next.push(tile);
-                }
-            }
-        }
-
-        const adjacent = [
-            {x: 1, y: 0},
-            {x: -1, y: 0},
-            {x: 0, y: 1},
-            {x: 0, y: -1}
-        ];
-
-        while (next.length > 0) {
-            let curTile = next[0];
-            next.shift();
-
-            if (!(curTile.properties.passesPower)) {
-                continue;
-            }
-
-            for (let offset of adjacent) {
-                let newX = curTile.x + offset.x;
-                let newY = curTile.y + offset.y;
-
-                let newTile = this.map.getTile(newX, newY, 'cables');
-                if (power_on(newTile)) {
-                    next.push(newTile);
-                }
-            }
-        }
-        this.cableLayer.dirty = true;
-
+        this.network.onTileUpdate.add(this.level.onTileUpdate.bind(this.level));
+        this.network.onTileUpdate.add(console.log);
     }
 
     update() {
-        this.physics.arcade.collide(this.player, this.platformLayer);
-        this.network.sendUpdate(this.player);
-        //this.player.on_update();
+        this.physics.arcade.collide(this.player, this.level.platformLayer);
+        this.network.sendKeyframe(this.player);
     }
 };
 
 module.exports = PlayState;
 
-},{"./conf.json":1,"./local-player.js":2,"./online-player.js":4,"./player.js":6,"./use-highlight.js":7}],6:[function(require,module,exports){
+},{"./conf.json":1,"./level.js":2,"./local-player.js":3,"./network-manager.js":5,"./online-player-manager.js":6,"./player.js":9,"./use-highlight.js":10}],9:[function(require,module,exports){
 const conf = require('./conf.json');
 
 class Player extends Phaser.Sprite {
@@ -390,25 +458,27 @@ class Player extends Phaser.Sprite {
 
 module.exports = Player;
 
-},{"./conf.json":1}],7:[function(require,module,exports){
+},{"./conf.json":1}],10:[function(require,module,exports){
 'use strict';
 const conf = require('./conf.json').Highlight;
 
-class UseHighlight extends Phaser.Graphics {
-    constructor(game, layer, player) {
+class UseManager extends Phaser.Graphics {
+    constructor(game, level, player) {
         super(game, 0, 0);
         super.lineStyle(2, 0xFFFFFF, 1);
         super.drawRect(1, 1, 30, 30);
 
         this.game.add.existing(this);
 
-        this.layer = layer;
+        this.layer = level.cableLayer;
         this.player = player;
 
         this.tile = null;
 
         this.useButton = this.game.input.keyboard.addKey(Phaser.KeyCode.E);
         this.onUse = new Phaser.Signal();
+
+        this.onUse.add(level.onUseTile.bind(level));
 
         this.useButton.onDown.add(key => {
             if (this.tile) {
@@ -426,9 +496,6 @@ class UseHighlight extends Phaser.Graphics {
             return;
         }
 
-        //let baseX = this.player.x - this.player.x % this.layer.game.tileWidth;
-        //let baseY = this.player.y - this.player.y % this.layer.game.tileHeight;
-
         let tileW = this.layer.map.tileWidth;
         let tileH = this.layer.map.tileHeight;
 
@@ -444,19 +511,11 @@ class UseHighlight extends Phaser.Graphics {
 
                 let curTile = this.layer.map.getTile(tileX, tileY, this.layer);
 
-                //console.log(tileX, tileY);
-
-                //console.log(curTile);
-                if (curTile) {
-                    //console.log('hello');
-                }
-
                 if ((curTile) && (curTile.properties.usable)) {
                     let xDist = this.player.x - (tileX + 0.5) * tileW;
                     let yDist = this.player.y - (tileY + 0.6) * tileH;
                     let curDist = Math.abs(xDist) + Math.abs(yDist);
 
-                    //console.log('bingo');
                     if ((this.tile == null) || (curDist < bestDist)) {
                         this.tile = curTile;
                         bestDist = curDist;
@@ -473,6 +532,6 @@ class UseHighlight extends Phaser.Graphics {
     }
 }
 
-module.exports = UseHighlight;
+module.exports = UseManager;
 
-},{"./conf.json":1}]},{},[3]);
+},{"./conf.json":1}]},{},[4]);
