@@ -12,7 +12,8 @@
         "WALK_VELOCITY": 800,
         "AIR_VELOCITY": 300,
         "JUMP_VELOCITY": 800,
-        "JUMP_INTERVAL_MS": 750
+        "JUMP_INTERVAL_MS": 750,
+        "INTERPOLATION_DELAY_MS": 100
     },
     "Highlight": {
         "Y": {

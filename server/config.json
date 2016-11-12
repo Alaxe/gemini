@@ -1,0 +1,5 @@
+{
+    "WEB_PORT": 7000,
+    "WS_PORT": 7001,
+    "PLAYER_COUNT": 2
+}

@@ -2,6 +2,8 @@
 
 const conf = require('./conf.json');
 const Player = require('./player.js');
+const LocalPlayer = require('./local-player.js');
+const OnlinePlayer = require('./online-player.js');
 const UseManager = require('./use-highlight.js');
 
 function has_power(tile) {
@@ -49,20 +51,104 @@ function toggle_switch(tile) {
     }
 }
 
-class PlayState {
-    constructor() {
+class NetworkManager {
+    constructor(game) {
+        this.game = game;
+        this.ws = new WebSocket(`ws://${document.location.hostname}:7001`);
+
+        this.onlinePlayers = {};
+
+        const self = this;
+
+        this.ws.onopen = () => {
+            let url = window.parent.location.pathname;
+
+            console.log(url);
+
+            let gameId = url.substr(url.lastIndexOf('/') + 1);
+            self.ws.send(JSON.stringify({
+                type: 'connect',
+                gameId: gameId
+            }));
+        }
+
+        this.ws.onmessage = msgStr => {
+            let msg = JSON.parse(msgStr.data);
+            //console.log('receive');
+            //console.log(msg);
+
+            if (msg.type == 'keyframeUpdate') {
+                self.keyframeUpdate(msg);
+            } else if (msg.type == 'levelUpdate') {
+
+            } else {
+                console.log('Received unknown message', msg);
+            }
+        }
     }
+
+    keyframeUpdate(update) {
+        if (! (update.playerId in this.onlinePlayers)) {
+            this.onlinePlayers[update.playerId] = new OnlinePlayer(this.game);
+        }
+        this.onlinePlayers[update.playerId].add_keyframe(update);
+    }
+
+    levelUpdate(update) {
+    }
+
+    sendUpdate(player) {
+        if (this.ws.readyState !== WebSocket.OPEN) {
+            return;
+        }
+        //console.log('send');
+        let msg = {
+            type: 'broadcast',
+            body: {
+                type: 'keyframeUpdate',
+                x: player.x,
+                y: player.y,
+                time: this.game.time.now
+            }
+        };
+        //console.log(msg);
+        this.ws.send(JSON.stringify(msg));
+    }
+}
+
+class PlayState {
+    constructor() {}
+
     preload() {
         this.load.image('platforms', '../assets/platforms.png')
         this.load.image('cables', '../assets/cables.png')
-        this.load.tilemap('map', '../assets/level.json', null, 
+        this.load.tilemap('map', '../assets/level.json', null,
             Phaser.Tilemap.TILED_JSON);
 
         this.load.image('player', '../assets/player.png');
     }
     create() {
-        //this.stage.backgroundColor = '#555';
+        this.create_world();
 
+        this.player = new LocalPlayer(this.game);
+        this.camera.follow(this.player, Phaser.Camera.FOLLOW_LOCKON,
+            conf.CAMERA_INTERPOLATION, conf.CAMERA_INTERPOLATION);
+
+
+        this.useButton = this.input.keyboard.addKey(Phaser.KeyCode.E);
+
+        this.useManager = new UseManager(this.game, this.cableLayer,
+                this.player);
+        this.useManager.onUse.add(tile => {
+            console.log('hi');
+            toggle_switch(tile);
+            this.simulate_power();
+        });
+
+        this.network = new NetworkManager(this.game);
+    }
+
+    create_world() {
         this.map = this.add.tilemap('map');
         this.map.addTilesetImage('platforms');
         this.map.addTilesetImage('cables');
@@ -80,25 +166,8 @@ class PlayState {
         //this.map.setCollision(1, true, 'platforms');
         this.map.setCollision(9, true, 'platforms');
 
-        //this.camera.y = this.map.heightInPixels - conf.GAME_H;
-        this.player = new Player(this.game);
-        this.camera.follow(this.player, Phaser.Camera.FOLLOW_LOCKON, 
-            conf.CAMERA_INTERPOLATION, conf.CAMERA_INTERPOLATION);
-
         this.simulate_power();
-
-        this.useButton = this.input.keyboard.addKey(Phaser.KeyCode.E);
-        
-        this.useManager = new UseManager(this.game, this.cableLayer, 
-                this.player);
-        this.useManager.onUse.add(tile => {
-            console.log('hi');
-            toggle_switch(tile);
-            this.simulate_power();
-        });
     }
-
-
 
     simulate_power() {
         let next = Array();
@@ -146,6 +215,7 @@ class PlayState {
 
     update() {
         this.physics.arcade.collide(this.player, this.platformLayer);
+        this.network.sendUpdate(this.player);
         //this.player.on_update();
     }
 };

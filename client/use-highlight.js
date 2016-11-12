@@ -62,7 +62,7 @@ class UseHighlight extends Phaser.Graphics {
                     let xDist = this.player.x - (tileX + 0.5) * tileW;
                     let yDist = this.player.y - (tileY + 0.6) * tileH;
                     let curDist = Math.abs(xDist) + Math.abs(yDist);
-                    
+
                     //console.log('bingo');
                     if ((this.tile == null) || (curDist < bestDist)) {
                         this.tile = curTile;
@@ -76,7 +76,7 @@ class UseHighlight extends Phaser.Graphics {
             this.visible = true;
             this.x = this.tile.worldX;
             this.y = this.tile.worldY;
-        } 
+        }
     }
 }
 

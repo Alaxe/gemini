@@ -13,7 +13,8 @@ module.exports={
         "WALK_VELOCITY": 800,
         "AIR_VELOCITY": 300,
         "JUMP_VELOCITY": 800,
-        "JUMP_INTERVAL_MS": 750
+        "JUMP_INTERVAL_MS": 750,
+        "INTERPOLATION_DELAY_MS": 100
     },
     "Highlight": {
         "Y": {
@@ -28,6 +29,60 @@ module.exports={
 }
 
 },{}],2:[function(require,module,exports){
+const conf = require('./conf.json');
+const Player = require('./player.js');
+
+class LocalPlayer extends Player {
+    constructor(game, x = 0, y = 0) {
+        super(game, x, y);
+
+        this.game.physics.enable(this, Phaser.Physics.ARCADE);
+
+        this.body.collideWorldBounds = true;
+        this.body.gravity.y = conf.Player.GRAVITY;
+
+        this.body.maxVelocity.y = conf.Player.MAX_VELOCITY.y;
+        this.body.maxVelocity.x = conf.Player.MAX_VELOCITY.x;
+
+        this.nextJump = this.game.time.now;
+
+        this.cursors = this.game.input.keyboard.createCursorKeys();
+        this.jump = this.game.input.keyboard.addKey(Phaser.KeyCode.SPACEBAR);
+
+    }
+
+    update() {
+        let xVelocity = this.body.onFloor()
+            ? conf.Player.WALK_VELOCITY
+            : conf.Player.AIR_VELOCITY;
+
+        if (this.cursors.right.isDown) {
+            this.body.velocity.x = xVelocity;
+        } else if (this.cursors.left.isDown) {
+            this.body.velocity.x = -xVelocity;
+        } else {
+            this.body.velocity.x = 0;
+        }
+
+
+        if ((this.body.onFloor()) && (this.jump.isDown) &&
+                (this.game.time.now >= this.nextJump)) {
+
+            this.body.velocity.y -= conf.Player.JUMP_VELOCITY;
+            this.nextJump = this.game.time.now + conf.Player.JUMP_INTERVAL_MS;
+        }
+
+        if (this.body.velocity.x < 0) {
+            this.scale.setTo(-1, 1);
+        } else if (this.body.velocity.x > 0) {
+            this.scale.setTo(1, 1);
+        }
+    }
+}
+
+module.exports = LocalPlayer;
+
+},{"./conf.json":1,"./player.js":6}],3:[function(require,module,exports){
 'use strict';
 let conf = require('./conf.json');
 let PlayState = require('./play-state.js');
@@ -37,11 +92,70 @@ let game = new Phaser.Game(conf.GAME_W, conf.GAME_H, Phaser.AUTO, '');
 game.state.add('play', new PlayState());
 game.state.start('play');
 
-},{"./conf.json":1,"./play-state.js":3}],3:[function(require,module,exports){
+},{"./conf.json":1,"./play-state.js":5}],4:[function(require,module,exports){
+const Player = require('./player.js');
+const conf = require('./conf.json');
+
+class OnlinePlayer extends Player {
+    constructor(game) {
+        super(game);
+        this.keyframes = [];
+
+        this.meanTimeDiff = 0;
+        this.meanSampleCnt = 0;
+    }
+
+    add_keyframe(msg) {
+        //msg.time = this.game.time.now;
+        this.keyframes.push(msg);
+
+        if (this.keyframes.length == 1) {
+            this.x = this.keyframes[0].x;
+            this.y = this.keyframes[0].y;
+        }
+
+        let timeDiff = this.game.time.now - msg.time;
+
+        this.meanTimeDiff *= this.meanSampleCnt / (this.meanSampleCnt + 1);
+        this.meanSampleCnt++;
+
+        this.meanTimeDiff += timeDiff / this.meanSampleCnt;
+        console.log(this.meanTimeDiff);
+    }
+    update() {
+        let netNow = this.game.time.now
+                - conf.Player.INTERPOLATION_DELAY_MS
+                - this.meanTimeDiff;
+
+        while ((this.keyframes.length > 1) && (this.keyframes[1].time < netNow)) {
+            this.keyframes.shift();
+        }
+
+        let prev = this.keyframes[0];
+        if (this.keyframes.length > 1) {
+            let next = this.keyframes[1];
+
+            let traversedPart = (netNow - prev.time) / (next.time - prev.time);
+
+            this.x = prev.x + (next.x - prev.x) * traversedPart;
+            this.y = prev.y + (next.y - prev.y) * traversedPart;
+        } else {
+            console.log('Not enough keyframes');
+            this.x = prev.x;
+            this.y = prev.y;
+        }
+    }
+}
+
+module.exports = OnlinePlayer;
+
+},{"./conf.json":1,"./player.js":6}],5:[function(require,module,exports){
 'use strict';
 
 const conf = require('./conf.json');
 const Player = require('./player.js');
+const LocalPlayer = require('./local-player.js');
+const OnlinePlayer = require('./online-player.js');
 const UseManager = require('./use-highlight.js');
 
 function has_power(tile) {
@@ -89,20 +203,104 @@ function toggle_switch(tile) {
     }
 }
 
-class PlayState {
-    constructor() {
+class NetworkManager {
+    constructor(game) {
+        this.game = game;
+        this.ws = new WebSocket(`ws://${document.location.hostname}:7001`);
+
+        this.onlinePlayers = {};
+
+        const self = this;
+
+        this.ws.onopen = () => {
+            let url = window.parent.location.pathname;
+
+            console.log(url);
+
+            let gameId = url.substr(url.lastIndexOf('/') + 1);
+            self.ws.send(JSON.stringify({
+                type: 'connect',
+                gameId: gameId
+            }));
+        }
+
+        this.ws.onmessage = msgStr => {
+            let msg = JSON.parse(msgStr.data);
+            //console.log('receive');
+            //console.log(msg);
+
+            if (msg.type == 'keyframeUpdate') {
+                self.keyframeUpdate(msg);
+            } else if (msg.type == 'levelUpdate') {
+
+            } else {
+                console.log('Received unknown message', msg);
+            }
+        }
     }
+
+    keyframeUpdate(update) {
+        if (! (update.playerId in this.onlinePlayers)) {
+            this.onlinePlayers[update.playerId] = new OnlinePlayer(this.game);
+        }
+        this.onlinePlayers[update.playerId].add_keyframe(update);
+    }
+
+    levelUpdate(update) {
+    }
+
+    sendUpdate(player) {
+        if (this.ws.readyState !== WebSocket.OPEN) {
+            return;
+        }
+        //console.log('send');
+        let msg = {
+            type: 'broadcast',
+            body: {
+                type: 'keyframeUpdate',
+                x: player.x,
+                y: player.y,
+                time: this.game.time.now
+            }
+        };
+        //console.log(msg);
+        this.ws.send(JSON.stringify(msg));
+    }
+}
+
+class PlayState {
+    constructor() {}
+
     preload() {
         this.load.image('platforms', '../assets/platforms.png')
         this.load.image('cables', '../assets/cables.png')
-        this.load.tilemap('map', '../assets/level.json', null, 
+        this.load.tilemap('map', '../assets/level.json', null,
             Phaser.Tilemap.TILED_JSON);
 
         this.load.image('player', '../assets/player.png');
     }
     create() {
-        //this.stage.backgroundColor = '#555';
+        this.create_world();
 
+        this.player = new LocalPlayer(this.game);
+        this.camera.follow(this.player, Phaser.Camera.FOLLOW_LOCKON,
+            conf.CAMERA_INTERPOLATION, conf.CAMERA_INTERPOLATION);
+
+
+        this.useButton = this.input.keyboard.addKey(Phaser.KeyCode.E);
+
+        this.useManager = new UseManager(this.game, this.cableLayer,
+                this.player);
+        this.useManager.onUse.add(tile => {
+            console.log('hi');
+            toggle_switch(tile);
+            this.simulate_power();
+        });
+
+        this.network = new NetworkManager(this.game);
+    }
+
+    create_world() {
         this.map = this.add.tilemap('map');
         this.map.addTilesetImage('platforms');
         this.map.addTilesetImage('cables');
@@ -120,25 +318,8 @@ class PlayState {
         //this.map.setCollision(1, true, 'platforms');
         this.map.setCollision(9, true, 'platforms');
 
-        //this.camera.y = this.map.heightInPixels - conf.GAME_H;
-        this.player = new Player(this.game);
-        this.camera.follow(this.player, Phaser.Camera.FOLLOW_LOCKON, 
-            conf.CAMERA_INTERPOLATION, conf.CAMERA_INTERPOLATION);
-
         this.simulate_power();
-
-        this.useButton = this.input.keyboard.addKey(Phaser.KeyCode.E);
-        
-        this.useManager = new UseManager(this.game, this.cableLayer, 
-                this.player);
-        this.useManager.onUse.add(tile => {
-            console.log('hi');
-            toggle_switch(tile);
-            this.simulate_power();
-        });
     }
-
-
 
     simulate_power() {
         let next = Array();
@@ -186,64 +367,30 @@ class PlayState {
 
     update() {
         this.physics.arcade.collide(this.player, this.platformLayer);
+        this.network.sendUpdate(this.player);
         //this.player.on_update();
     }
 };
 
 module.exports = PlayState;
 
-},{"./conf.json":1,"./player.js":4,"./use-highlight.js":5}],4:[function(require,module,exports){
+},{"./conf.json":1,"./local-player.js":2,"./online-player.js":4,"./player.js":6,"./use-highlight.js":7}],6:[function(require,module,exports){
 const conf = require('./conf.json');
 
 class Player extends Phaser.Sprite {
     constructor(game, x = 0, y = 0) {
         super(game, x, y, 'player');
 
-        this.game.physics.enable(this, Phaser.Physics.ARCADE);
+        ///Should add animations
+
         this.anchor.setTo(0.5, 0.5);
-        
-        this.body.collideWorldBounds = true;
-        this.body.gravity.y = conf.Player.GRAVITY;
-
-        this.body.maxVelocity.y = conf.Player.MAX_VELOCITY.y;
-        this.body.maxVelocity.x = conf.Player.MAX_VELOCITY.x;
-
-        this.nextJump = this.game.time.now;
-
-        this.moveButtons = this.game.input.keyboard.createCursorKeys();
-        this.jumpButton = this.game.input.keyboard.addKey(Phaser.KeyCode.SPACEBAR);
-
         this.game.add.existing(this);
-    }
-
-    update() {
-        let xVelocity = this.body.onFloor()
-            ? conf.Player.WALK_VELOCITY
-            : conf.Player.AIR_VELOCITY;
-
-        if (this.moveButtons.right.isDown) {
-            this.body.velocity.x = xVelocity;
-            this.scale.setTo(1, 1);
-        } else if (this.moveButtons.left.isDown) {
-            this.body.velocity.x = -xVelocity;
-            this.scale.setTo(-1, 1);
-        } else {
-            this.body.velocity.x = 0;
-        }
-
-        
-        if ((this.body.onFloor()) && (this.jumpButton.isDown) && 
-                (this.game.time.now >= this.nextJump)) {
-
-            this.body.velocity.y -= conf.Player.JUMP_VELOCITY;
-            this.nextJump = this.game.time.now + conf.Player.JUMP_INTERVAL_MS;
-        }
     }
 }
 
 module.exports = Player;
 
-},{"./conf.json":1}],5:[function(require,module,exports){
+},{"./conf.json":1}],7:[function(require,module,exports){
 'use strict';
 const conf = require('./conf.json').Highlight;
 
@@ -308,7 +455,7 @@ class UseHighlight extends Phaser.Graphics {
                     let xDist = this.player.x - (tileX + 0.5) * tileW;
                     let yDist = this.player.y - (tileY + 0.6) * tileH;
                     let curDist = Math.abs(xDist) + Math.abs(yDist);
-                    
+
                     //console.log('bingo');
                     if ((this.tile == null) || (curDist < bestDist)) {
                         this.tile = curTile;
@@ -322,10 +469,10 @@ class UseHighlight extends Phaser.Graphics {
             this.visible = true;
             this.x = this.tile.worldX;
             this.y = this.tile.worldY;
-        } 
+        }
     }
 }
 
 module.exports = UseHighlight;
 
-},{"./conf.json":1}]},{},[2]);
+},{"./conf.json":1}]},{},[3]);

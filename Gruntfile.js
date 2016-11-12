@@ -2,30 +2,32 @@ module.exports = function(grunt) {
     grunt.initConfig({
         browserify: {
             bundle: {
-                src: 'src/main.js',
-                dest: 'build/game.js'
+                src: 'client/main.js',
+                dest: 'build/static/game.js'
             },
         },
-        connect: {
-            server: {
+        trimtrailingspaces: {
+            all: {
+                src: ['client/**/*.js', 'server/**/*.js', 'Gruntfile.js'],
                 options: {
-                    port: 8000,
-                    directory: '.'
+                    filter: 'isFile',
+                    failIfTrimmed: false
                 }
             }
         },
         watch: {
             bundle: {
-                files: ['src/**/*.js', 'src/**/*.json'],
+                files: ['client/**/*.js', 'client/**/*.json'],
                 tasks: 'browserify:bundle'
-            }
+            },
         }
     });
     grunt.loadNpmTasks('grunt-browserify');
-    grunt.loadNpmTasks('grunt-contrib-connect');
     grunt.loadNpmTasks('grunt-contrib-watch');
+    grunt.loadNpmTasks('grunt-trimtrailingspaces');
 
-    grunt.registerTask('build', ['browserify:bundle']);
-    grunt.registerTask('default', ['browserify:bundle', 'connect', 'watch']);
+    grunt.registerTask('build', ['trimtrailingspaces:all',
+            'browserify:bundle']);
+    grunt.registerTask('default', ['build', 'watch']);
 
 };
