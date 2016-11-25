@@ -312,7 +312,7 @@ class OnlinePlayerManager {
         }
         return this.playersById[id];
     }
-    
+
     handleKeyframeUpdate(msg) {
         let player = this.getPlayerById(msg.playerId);
         player.addKeyframe(msg);
@@ -409,7 +409,7 @@ class PlayState {
     create() {
         this.physics.startSystem(Phaser.Physics.ARCADE);
         this.physics.arcade.gravity.y = conf.GRAVITY;
-        
+
         this.level = new Level(this.game);
 
         this.player = new LocalPlayer(this.game);
