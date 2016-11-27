@@ -43,7 +43,9 @@ class NetworkManager {
                 y: tile.y,
                 layer: tile.layer.name,
                 index: tile.index,
-                properties: tile.properties
+                properties: {
+                    onUseId: tile.properties.onUseId
+                }
             }
         });
     }

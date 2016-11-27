@@ -1,28 +1,90 @@
-function has_power(tile) {
-    return (tile != null) && ((tile.index & 1) == 0);
+'use strict';
+function rotateMask(mask, rotationRad) {
+    let rotCnt = Math.round(rotationRad / Math.PI * 2);
+    let firstMask = mask;
+    for (let i = 0;i < rotCnt;i++) {
+        mask = ((mask & 7) << 1) + ((mask & 8) >> 3);
+    }
+
+    return mask;
 }
 
-function power_off(tile) {
-    if (tile == null) {
-        return false;
-    } else if (!has_power(tile)) {
-        return false;
-    } else if (tile.properties.sourcesPower) {
-        return false;
-    } else {
-        tile.index--;
-        return true;
+class LogicBlock {
+    constructor(tile) {
+        this.tile = tile;
+        this.inCC = null;
+        this.outCC = null;
+
+        this.hasInput = false;
+        this.calcOutput();
+    }
+
+    calcOutput() {
+        
+        if ((this.hasInput) && (this.tile.index & 1)) {
+            this.tile.index++;
+        } else if ((!this.hasInput) && ((this.tile.index & 1) == 0)) {
+            this.tile.index--;
+        }
+
+        if (this.hasInput) {
+        
+        }
+        const outputIds = [9, 10, 12, 13, 18];
+        this.hasOutput = outputIds.includes(this.tile.index);
     }
 }
 
-function power_on(tile) {
-    if (tile == null) {
-        return false;
-    } else if (has_power(tile)) {
-        return false;
-    } else {
-        tile.index++;
-        return true;
+class CableComponent {
+    constructor() {
+        this.tiles = [];
+        this.input = [];
+        this.output = [];
+
+        this.inputsLeft = 0;
+        this.hasInput = false;
+
+        //this.map = startTile.layer.map;
+    }
+
+    setPower(power) {
+        //console.log(this.tiles, power);
+        for (let tile of this.tiles) {
+            let baseIndex = tile.index;
+            if ((tile.index & 1) == 0) {
+                baseIndex--;
+            }
+
+            tile.index = power
+                ? baseIndex + 1
+                : baseIndex;
+            //tile.id++;
+            //this.map.putTile(tile, tile.x, tile.y, tile.layer.name);
+            //console.log(tile.layer.name);
+        }
+    }
+
+    addCable(tile) {
+        if (tile.properties.type !== 'cable') {
+            throw new Error(tile);
+        }
+
+        this.tiles.push(tile);
+        tile.properties.component = this;
+    }
+
+    addOutput(tile) {
+        let block = tile.properties.block;
+
+        this.output.push(block);
+        block.inCC = this;
+    }
+
+    addInput(tile) {
+        let block = tile.properties.block;
+
+        this.input.push(block);
+        block.outCC = this;
     }
 }
 
@@ -42,39 +104,42 @@ class Level {
         this.platformLayer = this.map.createLayer('platforms');
         this.platformLayer.resizeWorld();
 
-        this.map.setCollision(9, true, 'platforms');
+        this.map.setCollision(19, true, 'platforms');
+        this.buildNetwork();
 
         this.simulatePower();
     }
 
     static useTile(tile) {
-        if (tile == null) {
+        if ((tile == null) || (!tile.properties.usable)) {
             return false;
-        } else if ((tile.index == 3) || (tile.index == 4)) {
-            tile.index += 2;
-            tile.properties.passesPower = true;
-            return true;
-        } else if ((tile.index == 5) || (tile.index == 6)) {
-            tile.index -= 2;
-            tile.properties.passesPower = false;
-            return true;
         } else {
-            return false;
+            let oldIndex = tile.index;
+            console.log(tile);
+
+            tile.index = tile.properties.onUseId;
+            tile.properties.onUseId = oldIndex;
+
+            console.log(tile);
+
+            return true;
         }
     }
 
     onUseTile(tile) {
+        console.log('using ', tile);
         if (this.constructor.useTile(tile)) {
             this.simulatePower();
             console.log(tile);
             this.onTileChange.dispatch(tile);
         }
     }
+
     onTileUpdate(msg) {
         let tile = this.map.getTile(msg.x, msg.y, msg.layer, true);
 
         tile.index = msg.index;
-        tile.properties = msg.properties;
+        tile.properties.onUseId = msg.properties.onUseId;
 
         this.map.putTile(tile, msg.x, msg.y, msg.layer);
 
@@ -83,46 +148,178 @@ class Level {
         }
     }
 
-    simulatePower() {
-        let next = Array();
+    initNetwork() {
+        this.cableComponents = [];
+        this.logicBlocks = [];
 
         for (let x = 0;x < this.map.width;x++) {
             for (let y = 0;y < this.map.height;y++) {
                 let tile = this.map.getTile(x, y, 'cables');
 
-                power_off(tile);
+                if (tile == null) {
+                    continue;
+                }
+                tile.properties.component = null;
 
-                if ((tile) && (tile.properties.sourcesPower)) {
-                    next.push(tile);
+                if (tile.properties.type === 'logic') {
+                    tile.properties.block = new LogicBlock(tile);
+                    this.logicBlocks.push(tile.properties.block);
                 }
             }
         }
+    }
 
-        const adjacent = [
+    rotateTileEnds() {
+        for (let x = 0;x < this.map.width;x++) {
+            for (let y = 0;y < this.map.height;y++) {
+                let tile = this.map.getTile(x, y, 'cables');
+                if (tile === null) {
+                    continue;
+                }
+
+                let prop = tile.properties;
+                let rotation = tile.rotation;
+
+                if (prop.type === 'cable') {
+                    prop.ends = rotateMask(prop.ends, rotation);
+                } else if (prop.type === 'logic') {
+                    prop.input = rotateMask(prop.input, rotation);
+                    prop.output = rotateMask(prop.output, rotation);
+                }
+            }
+        }
+    }
+    getLogicBlock(tile) {
+        if (tile.properties.type !== 'logic') {
+            throw new Error(tile);
+        }
+        if (!tile.block) {
+            tile.block =  new LogicBlock(tile);
+        }
+        return tile.block;
+    }
+
+    buildComponent(startTile) {
+        let cc = new CableComponent();
+        cc.addCable(startTile);
+
+        let queue = [startTile];
+
+        const sides = [
+            {x: 0, y: -1},
             {x: 1, y: 0},
-            {x: -1, y: 0},
             {x: 0, y: 1},
-            {x: 0, y: -1}
+            {x: -1, y: 0}
         ];
 
-        while (next.length > 0) {
-            let curTile = next[0];
-            next.shift();
+        while (queue.length > 0) {
+            let curTile = queue[0];
+            queue.shift();
 
-            if (!(curTile.properties.passesPower)) {
-                continue;
-            }
+            for (let i = 0;i < sides.length;i++) {
+                let curBit = 1 << i;
+                let newBit = 1 << ((i + 2) % 4);
 
-            for (let offset of adjacent) {
-                let newX = curTile.x + offset.x;
-                let newY = curTile.y + offset.y;
+                if (!(curTile.properties.ends & curBit)) {
+                    continue;
+                }
+
+                let newX = curTile.x + sides[i].x;
+                let newY = curTile.y + sides[i].y;
 
                 let newTile = this.map.getTile(newX, newY, 'cables');
-                if (power_on(newTile)) {
-                    next.push(newTile);
+                if (newTile == null) {
+                    continue;
+                }
+
+                if (newTile.properties.type === 'cable') {
+                    if ((newTile.properties.ends & newBit) &&
+                            (!newTile.properties.component)) {
+                        cc.addCable(newTile);
+                        queue.push(newTile);
+                    }
+                } else if (newTile.properties.type === 'logic') {
+                    if (newTile.properties.input & newBit) {
+                        cc.addOutput(newTile);
+                    } else if (newTile.properties.output & newBit) {
+                        cc.addInput(newTile);
+                    }
                 }
             }
         }
+        return cc;
+    }
+
+    buildNetwork() {
+        this.rotateTileEnds();
+        this.initNetwork();
+
+        for (let x = 0;x < this.map.width;x++) {
+            for (let y = 0;y < this.map.height;y++) {
+                let tile = this.map.getTile(x, y, 'cables');
+                if (tile === null) {
+                    continue;
+                }
+
+                if ((tile.properties.type === 'cable') &&
+                        (tile.properties.component == null)) {
+                    this.cableComponents.push(this.buildComponent(tile));
+                }
+            }
+        }
+
+        for (let block of this.logicBlocks) {
+            if (!block.inCC) {
+                block.inCC = new CableComponent();
+                block.inCC.addOutput(block.tile);
+
+                this.cableComponents.push(block.inCC);
+            }
+            if (!block.outCC) {
+                block.outCC = new CableComponent();
+                block.outCC.addInput(block.tile);
+
+                this.cableComponents.push(block.outCC);
+            }
+        }
+
+        //console.log(this.cableComponents);
+    }
+
+    simulatePower() {
+        let queue = [];
+        for (let cc of this.cableComponents) {
+            cc.inputsLeft = cc.input.length;
+            cc.hasInput = false;
+
+            if (cc.inputsLeft == 0) {
+                queue.push(cc);
+            }
+            //i.setPower(Math.round(Math.random()));
+        }
+
+        while (queue.length > 0) {
+            let cur = queue[0];
+            queue.shift();
+
+            //console.log(cur);
+
+            cur.setPower(cur.hasInput);
+
+            for (let block of cur.output) {
+                block.hasInput = cur.hasInput;
+                block.calcOutput();
+
+                block.outCC.hasInput = block.outCC.hasInput || block.hasOutput;
+                //console.log(block.hasOutput, block.outCC.hasInput);
+                block.outCC.inputsLeft--;
+
+                if (block.outCC.inputsLeft == 0) {
+                    queue.push(block.outCC);
+                }
+            }
+        }
+
         this.cableLayer.dirty = true;
     }
 }
