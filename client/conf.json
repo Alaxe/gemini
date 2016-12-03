@@ -23,6 +23,32 @@
         "X": {
             "min": 0,
             "max": 2
+        },
+        "color": 0xFFFFFF
+    },
+    "fonts": ["Roboto"],
+    "Text": {
+        "font": "Roboto",
+        "fontSize": 25,
+        "fill": "#FFFFFF",
+        "wordWrap": true,
+        "wordWrapWidth": 180
+    },
+    "Button": {
+        "Text": {
+            "boundsAlignH": "center",
+            "boundsAlignV": "middle"
+        },
+        "Container": {
+            "rectRadius": 10,
+            "padding": 10,
+            "fill": 0x1C67FF,
+            "hover": 0x0C5CFC,
+            "width": 200,
+            "height": 50
         }
+    },
+    "Menu": {
+        "background": "#314047"
     }
 }

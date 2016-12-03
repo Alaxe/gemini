@@ -5,7 +5,8 @@ class UseManager extends Phaser.Graphics {
     constructor(game, level, player) {
         console.log('bollocks');
         super(game, 0, 0);
-        super.lineStyle(2, 0xFFFFFF, 1);
+
+        super.lineStyle(2, conf.color, 1);
         super.drawRect(1, 1, 30, 30);
 
         this.game.add.existing(this);

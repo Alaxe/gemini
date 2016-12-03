@@ -20,7 +20,7 @@ class LogicBlock {
     }
 
     calcOutput() {
-        
+
         if ((this.hasInput) && (this.tile.index & 1)) {
             this.tile.index++;
         } else if ((!this.hasInput) && ((this.tile.index & 1) == 0)) {
@@ -28,7 +28,7 @@ class LogicBlock {
         }
 
         if (this.hasInput) {
-        
+
         }
         const outputIds = [9, 10, 12, 13, 18];
         this.hasOutput = outputIds.includes(this.tile.index);
@@ -250,6 +250,49 @@ class Level {
         return cc;
     }
 
+    connectLogicBlocks() {
+        for (let block of this.logicBlocks) {
+            if (!block.outCC) {
+                block.outCC = new CableComponent();
+                block.outCC.addInput(block.tile);
+
+                const sides = [
+                    {x: 0, y: -1},
+                    {x: 1, y: 0},
+                    {x: 0, y: 1},
+                    {x: -1, y: 0}
+                ];
+                for (let i = 0;i < sides.length;i++) {
+                    if ((block.tile.properties.output & (1 << i)) == 0) {
+                        continue;
+                    }
+
+                    let nX = block.tile.x + sides[i].x;
+                    let nY = block.tile.y + sides[i].y;
+
+                    let nTile = this.map.getTile(nX, nY, 'cables');
+
+                    if ((nTile == null) || (nTile.properties.type != 'logic')) {
+                        continue;
+                    }
+
+                    block.outCC.addOutput(nTile);
+                }
+
+                this.cableComponents.push(block.outCC);
+            }
+        }
+
+        for (let block of this.logicBlocks) {
+            if (!block.inCC) {
+                block.inCC = new CableComponent();
+                block.inCC.addOutput(block.tile);
+
+                this.cableComponents.push(block.inCC);
+            }
+        }
+    }
+
     buildNetwork() {
         this.rotateTileEnds();
         this.initNetwork();
@@ -268,22 +311,7 @@ class Level {
             }
         }
 
-        for (let block of this.logicBlocks) {
-            if (!block.inCC) {
-                block.inCC = new CableComponent();
-                block.inCC.addOutput(block.tile);
-
-                this.cableComponents.push(block.inCC);
-            }
-            if (!block.outCC) {
-                block.outCC = new CableComponent();
-                block.outCC.addInput(block.tile);
-
-                this.cableComponents.push(block.outCC);
-            }
-        }
-
-        //console.log(this.cableComponents);
+        this.connectLogicBlocks();
     }
 
     simulatePower() {

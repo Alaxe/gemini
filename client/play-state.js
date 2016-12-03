@@ -5,6 +5,7 @@ const conf = require('./conf.json');
 const Player = require('./player.js');
 const LocalPlayer = require('./local-player.js');
 const OnlinePlayerManager = require('./online-player-manager.js');
+const loadFont = require('./load-font.js');
 
 const NetworkManager = require('./network-manager.js');
 const Level = require('./level.js');
@@ -21,6 +22,8 @@ class PlayState {
             Phaser.Tilemap.TILED_JSON);
 
         this.load.image('player', '../assets/player.png');
+
+        loadFont();
     }
     create() {
         this.physics.startSystem(Phaser.Physics.ARCADE);
@@ -48,6 +51,7 @@ class PlayState {
 
         this.network.onTileUpdate.add(this.level.onTileUpdate.bind(this.level));
         this.network.onTileUpdate.add(console.log);
+        this.restart = this.input.keyboard.addKey(Phaser.Keyboard.R);
     }
 
     update() {

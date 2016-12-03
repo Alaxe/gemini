@@ -1,4 +1,63 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+const conf = require('./conf.json');
+const loadFont = require('./load-font.js');
+
+class Button extends Phaser.Group {
+    constructor(game, x, y, label, width, height) {
+        super(game);
+
+        this.x = x;
+        this.y = y;
+        this.onClick = new Phaser.Signal();
+
+        width = width || conf.Button.Container.width;
+        height = height || conf.Button.Container.height;
+
+        this.background = game.add.graphics();
+
+        this.background.beginFill(0xFFFFFFF);
+        this.background.drawRoundedRect(0, 0, width, height,
+            conf.Button.Container.rectRadius);
+        this.background.endFill();
+
+        this.background.tint = conf.Button.Container.fill;
+
+        this.background.inputEnabled = true;
+
+        this.background.events.onInputOver.add(() => {
+            this.background.tint = conf.Button.Container.hover;
+        })
+        this.background.events.onInputOut.add(() => {
+            this.background.tint = conf.Button.Container.fill;
+        });
+        this.background.events.onInputDown.add(() => {
+            this.onClick.dispatch();
+        });
+
+        this.background.tint = conf.Button.Container.fill;
+
+        this.add(this.background);
+
+
+        loadFont().then(() => {
+            let textStyle = Object.assign({}, conf.Text, conf.Button.Text);
+            console.log(textStyle);
+            this.text = game.add.text(0, 0, label, textStyle);
+
+            let padding = conf.Button.Container.padding;
+
+            let textWidth = width - 2 * padding;;
+            let textHeight = height - 2 * padding;;
+
+            this.text.setTextBounds(padding, padding, textWidth, textHeight);
+            this.add(this.text);
+        });
+    }
+};
+
+module.exports = Button;
+
+},{"./conf.json":2,"./load-font.js":4}],2:[function(require,module,exports){
 module.exports={
     "GAME_W": 800,
     "GAME_H": 500,
@@ -24,11 +83,37 @@ module.exports={
         "X": {
             "min": 0,
             "max": 2
+        },
+        "color": 0xFFFFFF
+    },
+    "fonts": ["Roboto"],
+    "Text": {
+        "font": "Roboto",
+        "fontSize": 25,
+        "fill": "#FFFFFF",
+        "wordWrap": true,
+        "wordWrapWidth": 180
+    },
+    "Button": {
+        "Text": {
+            "boundsAlignH": "center",
+            "boundsAlignV": "middle"
+        },
+        "Container": {
+            "rectRadius": 10,
+            "padding": 10,
+            "fill": 0x1C67FF,
+            "hover": 0x0C5CFC,
+            "width": 200,
+            "height": 50
         }
+    },
+    "Menu": {
+        "background": "#314047"
     }
 }
 
-},{}],2:[function(require,module,exports){
+},{}],3:[function(require,module,exports){
 'use strict';
 function rotateMask(mask, rotationRad) {
     let rotCnt = Math.round(rotationRad / Math.PI * 2);
@@ -51,7 +136,7 @@ class LogicBlock {
     }
 
     calcOutput() {
-        
+
         if ((this.hasInput) && (this.tile.index & 1)) {
             this.tile.index++;
         } else if ((!this.hasInput) && ((this.tile.index & 1) == 0)) {
@@ -59,7 +144,7 @@ class LogicBlock {
         }
 
         if (this.hasInput) {
-        
+
         }
         const outputIds = [9, 10, 12, 13, 18];
         this.hasOutput = outputIds.includes(this.tile.index);
@@ -281,6 +366,49 @@ class Level {
         return cc;
     }
 
+    connectLogicBlocks() {
+        for (let block of this.logicBlocks) {
+            if (!block.outCC) {
+                block.outCC = new CableComponent();
+                block.outCC.addInput(block.tile);
+
+                const sides = [
+                    {x: 0, y: -1},
+                    {x: 1, y: 0},
+                    {x: 0, y: 1},
+                    {x: -1, y: 0}
+                ];
+                for (let i = 0;i < sides.length;i++) {
+                    if ((block.tile.properties.output & (1 << i)) == 0) {
+                        continue;
+                    }
+
+                    let nX = block.tile.x + sides[i].x;
+                    let nY = block.tile.y + sides[i].y;
+
+                    let nTile = this.map.getTile(nX, nY, 'cables');
+
+                    if ((nTile == null) || (nTile.properties.type != 'logic')) {
+                        continue;
+                    }
+
+                    block.outCC.addOutput(nTile);
+                }
+
+                this.cableComponents.push(block.outCC);
+            }
+        }
+
+        for (let block of this.logicBlocks) {
+            if (!block.inCC) {
+                block.inCC = new CableComponent();
+                block.inCC.addOutput(block.tile);
+
+                this.cableComponents.push(block.inCC);
+            }
+        }
+    }
+
     buildNetwork() {
         this.rotateTileEnds();
         this.initNetwork();
@@ -299,22 +427,7 @@ class Level {
             }
         }
 
-        for (let block of this.logicBlocks) {
-            if (!block.inCC) {
-                block.inCC = new CableComponent();
-                block.inCC.addOutput(block.tile);
-
-                this.cableComponents.push(block.inCC);
-            }
-            if (!block.outCC) {
-                block.outCC = new CableComponent();
-                block.outCC.addInput(block.tile);
-
-                this.cableComponents.push(block.outCC);
-            }
-        }
-
-        //console.log(this.cableComponents);
+        this.connectLogicBlocks();
     }
 
     simulatePower() {
@@ -356,7 +469,19 @@ class Level {
 }
 module.exports = Level;
 
-},{}],3:[function(require,module,exports){
+},{}],4:[function(require,module,exports){
+//const FontFaceObserver = require('fontfaceobserver');
+const conf = require('./conf.json');
+
+module.exports = () => {
+    let promises = [];
+    for (let font of conf.fonts) {
+        promises.push(new FontFaceObserver(font).load());
+    }
+    return Promise.all(promises);
+}
+
+},{"./conf.json":2}],5:[function(require,module,exports){
 const conf = require('./conf.json');
 const Player = require('./player.js');
 
@@ -410,17 +535,47 @@ class LocalPlayer extends Player {
 
 module.exports = LocalPlayer;
 
-},{"./conf.json":1,"./player.js":9}],4:[function(require,module,exports){
-'use strict';
-let conf = require('./conf.json');
-let PlayState = require('./play-state.js');
+},{"./conf.json":2,"./player.js":12}],6:[function(require,module,exports){
+const conf = require('./conf.json');
 
-let game = new Phaser.Game(conf.GAME_W, conf.GAME_H, Phaser.WEBGL, '');
+const loadFont = require('./load-font.js');
+const Button = require('./button.js');
+
+class MainMenu {
+    constructor() {}
+
+    init() {}
+    preload() {
+        loadFont();
+    }
+    create() {
+        this.button = new Button(this.game, 300, 200, 'Start', 200, 100);
+        this.stage.backgroundColor = conf.Menu.background;
+
+        this.button.onClick.add(() => {
+            this.game.state.start('play');
+        });
+    }
+
+};
+
+module.exports = MainMenu;
+
+},{"./button.js":1,"./conf.json":2,"./load-font.js":4}],7:[function(require,module,exports){
+'use strict';
+
+const conf = require('./conf.json');
+const PlayState = require('./play-state.js');
+const MainMenu = require('./main-menu.js');
+
+const game = new Phaser.Game(conf.GAME_W, conf.GAME_H, Phaser.WEBGL, '');
+game.global = {};
 
 game.state.add('play', new PlayState());
-game.state.start('play');
+game.state.add('mainMenu', new MainMenu());
+game.state.start('mainMenu');
 
-},{"./conf.json":1,"./play-state.js":8}],5:[function(require,module,exports){
+},{"./conf.json":2,"./main-menu.js":6,"./play-state.js":11}],8:[function(require,module,exports){
 class NetworkManager {
     constructor(game) {
         this.game = game;
@@ -496,7 +651,7 @@ class NetworkManager {
 
 module.exports = NetworkManager;
 
-},{}],6:[function(require,module,exports){
+},{}],9:[function(require,module,exports){
 const OnlinePlayer = require('./online-player.js');
 
 class OnlinePlayerManager {
@@ -519,7 +674,7 @@ class OnlinePlayerManager {
 }
 module.exports = OnlinePlayerManager;
 
-},{"./online-player.js":7}],7:[function(require,module,exports){
+},{"./online-player.js":10}],10:[function(require,module,exports){
 const Player = require('./player.js');
 const conf = require('./conf.json');
 
@@ -580,7 +735,7 @@ class OnlinePlayer extends Player {
 
 module.exports = OnlinePlayer;
 
-},{"./conf.json":1,"./player.js":9}],8:[function(require,module,exports){
+},{"./conf.json":2,"./player.js":12}],11:[function(require,module,exports){
 'use strict';
 
 const conf = require('./conf.json');
@@ -588,6 +743,7 @@ const conf = require('./conf.json');
 const Player = require('./player.js');
 const LocalPlayer = require('./local-player.js');
 const OnlinePlayerManager = require('./online-player-manager.js');
+const loadFont = require('./load-font.js');
 
 const NetworkManager = require('./network-manager.js');
 const Level = require('./level.js');
@@ -604,6 +760,8 @@ class PlayState {
             Phaser.Tilemap.TILED_JSON);
 
         this.load.image('player', '../assets/player.png');
+
+        loadFont();
     }
     create() {
         this.physics.startSystem(Phaser.Physics.ARCADE);
@@ -631,6 +789,7 @@ class PlayState {
 
         this.network.onTileUpdate.add(this.level.onTileUpdate.bind(this.level));
         this.network.onTileUpdate.add(console.log);
+        this.restart = this.input.keyboard.addKey(Phaser.Keyboard.R);
     }
 
     update() {
@@ -641,7 +800,7 @@ class PlayState {
 
 module.exports = PlayState;
 
-},{"./conf.json":1,"./level.js":2,"./local-player.js":3,"./network-manager.js":5,"./online-player-manager.js":6,"./player.js":9,"./use-highlight.js":10}],9:[function(require,module,exports){
+},{"./conf.json":2,"./level.js":3,"./load-font.js":4,"./local-player.js":5,"./network-manager.js":8,"./online-player-manager.js":9,"./player.js":12,"./use-highlight.js":13}],12:[function(require,module,exports){
 const conf = require('./conf.json');
 
 class Player extends Phaser.Sprite {
@@ -657,7 +816,7 @@ class Player extends Phaser.Sprite {
 
 module.exports = Player;
 
-},{"./conf.json":1}],10:[function(require,module,exports){
+},{"./conf.json":2}],13:[function(require,module,exports){
 'use strict';
 const conf = require('./conf.json').Highlight;
 
@@ -665,7 +824,8 @@ class UseManager extends Phaser.Graphics {
     constructor(game, level, player) {
         console.log('bollocks');
         super(game, 0, 0);
-        super.lineStyle(2, 0xFFFFFF, 1);
+
+        super.lineStyle(2, conf.color, 1);
         super.drawRect(1, 1, 30, 30);
 
         this.game.add.existing(this);
@@ -735,4 +895,4 @@ class UseManager extends Phaser.Graphics {
 
 module.exports = UseManager;
 
-},{"./conf.json":1}]},{},[4]);
+},{"./conf.json":2}]},{},[7]);
