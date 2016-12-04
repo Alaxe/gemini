@@ -1,6 +1,6 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 const conf = require('./conf.json');
-const loadFont = require('./load-font.js');
+const Text = require('./text.js');
 
 class Button extends Phaser.Group {
     constructor(game, x, y, label, width, height) {
@@ -10,54 +10,49 @@ class Button extends Phaser.Group {
         this.y = y;
         this.onClick = new Phaser.Signal();
 
-        width = width || conf.Button.Container.width;
-        height = height || conf.Button.Container.height;
+        width = width || conf.Button.width;
+        height = height || conf.Button.height;
 
         this.background = game.add.graphics();
 
         this.background.beginFill(0xFFFFFFF);
         this.background.drawRoundedRect(0, 0, width, height,
-            conf.Button.Container.rectRadius);
+            conf.Button.rectRadius);
         this.background.endFill();
 
-        this.background.tint = conf.Button.Container.fill;
+        this.background.tint = conf.Button.fill;
 
         this.background.inputEnabled = true;
 
         this.background.events.onInputOver.add(() => {
-            this.background.tint = conf.Button.Container.hover;
+            this.background.tint = conf.Button.hover;
         })
         this.background.events.onInputOut.add(() => {
-            this.background.tint = conf.Button.Container.fill;
+            this.background.tint = conf.Button.fill;
         });
         this.background.events.onInputDown.add(() => {
             this.onClick.dispatch();
         });
 
-        this.background.tint = conf.Button.Container.fill;
+        this.background.tint = conf.Button.fill;
 
         this.add(this.background);
 
-
-        loadFont().then(() => {
-            let textStyle = Object.assign({}, conf.Text, conf.Button.Text);
-            console.log(textStyle);
-            this.text = game.add.text(0, 0, label, textStyle);
-
-            let padding = conf.Button.Container.padding;
-
-            let textWidth = width - 2 * padding;;
-            let textHeight = height - 2 * padding;;
-
-            this.text.setTextBounds(padding, padding, textWidth, textHeight);
-            this.add(this.text);
-        });
+        this.text = new Text(game, 0, 0, label, Object.assign(
+            {},
+            conf.Button.Text,
+            {
+                width: width,
+                height: height
+            }
+        ));
+        this.add(this.text);
     }
 };
 
 module.exports = Button;
 
-},{"./conf.json":2,"./load-font.js":4}],2:[function(require,module,exports){
+},{"./conf.json":2,"./text.js":14}],2:[function(require,module,exports){
 module.exports={
     "GAME_W": 800,
     "GAME_H": 500,
@@ -66,10 +61,10 @@ module.exports={
     "Player": {
         "GRAVITY": 1600,
         "MAX_VELOCITY": {
-            "x": 400,
-            "y": 1500
+            "x": 1000,
+            "y": 1000
         },
-        "WALK_VELOCITY": 800,
+        "WALK_VELOCITY": 600,
         "AIR_VELOCITY": 300,
         "JUMP_VELOCITY": 800,
         "JUMP_INTERVAL_MS": 750,
@@ -88,28 +83,41 @@ module.exports={
     },
     "fonts": ["Roboto"],
     "Text": {
-        "font": "Roboto",
-        "fontSize": 25,
-        "fill": "#FFFFFF",
+        "font": "25px Roboto",
+        "fill": "#222",
         "wordWrap": true,
-        "wordWrapWidth": 180
+        "wordWrapWidth": 1000000,
+        "padding": 10,
+        "boundsAlignH": "center"
     },
     "Button": {
         "Text": {
             "boundsAlignH": "center",
-            "boundsAlignV": "middle"
+            "boundsAlignV": "middle",
+            "fill": "#FFFFFF"
         },
-        "Container": {
-            "rectRadius": 10,
-            "padding": 10,
-            "fill": 0x1C67FF,
-            "hover": 0x0C5CFC,
-            "width": 200,
-            "height": 50
-        }
+        "rectRadius": 10,
+        "padding": 10,
+        "fill": 0x1C67FF,
+        "hover": 0x0C5CFC,
+        "width": 200,
+        "height": 50
     },
-    "Menu": {
-        "background": "#314047"
+    "InputField": {
+        "fill": "#222",
+        "padding": 5,
+        "borderColor": "#1C67FF",
+        "borderRadius": 10,
+        "backgroundColor": "#eeeeee",
+        "cursorColor": "#222222",
+        "font": "20px Roboto",
+        "height": 25,
+        "width": 200
+
+    },
+    "Background": {
+        "menu": "#eee",
+        "play": "#435668"
     }
 }
 
@@ -470,7 +478,7 @@ class Level {
 module.exports = Level;
 
 },{}],4:[function(require,module,exports){
-//const FontFaceObserver = require('fontfaceobserver');
+const FontFaceObserver = require('fontfaceobserver');
 const conf = require('./conf.json');
 
 module.exports = () => {
@@ -481,7 +489,7 @@ module.exports = () => {
     return Promise.all(promises);
 }
 
-},{"./conf.json":2}],5:[function(require,module,exports){
+},{"./conf.json":2,"fontfaceobserver":16}],5:[function(require,module,exports){
 const conf = require('./conf.json');
 const Player = require('./player.js');
 
@@ -501,7 +509,6 @@ class LocalPlayer extends Player {
 
         this.cursors = this.game.input.keyboard.createCursorKeys();
         this.jump = this.game.input.keyboard.addKey(Phaser.KeyCode.SPACEBAR);
-
     }
 
     update() {
@@ -511,6 +518,7 @@ class LocalPlayer extends Player {
 
         if (this.cursors.right.isDown) {
             this.body.velocity.x = xVelocity;
+            console.log('hi');
         } else if (this.cursors.left.isDown) {
             this.body.velocity.x = -xVelocity;
         } else {
@@ -535,11 +543,12 @@ class LocalPlayer extends Player {
 
 module.exports = LocalPlayer;
 
-},{"./conf.json":2,"./player.js":12}],6:[function(require,module,exports){
+},{"./conf.json":2,"./player.js":13}],6:[function(require,module,exports){
 const conf = require('./conf.json');
 
 const loadFont = require('./load-font.js');
 const Button = require('./button.js');
+const Text = require('./text.js');
 
 class MainMenu {
     constructor() {}
@@ -547,35 +556,52 @@ class MainMenu {
     init() {}
     preload() {
         loadFont();
+        this.add.plugin(Fabrique.Plugins.InputField);
     }
     create() {
-        this.button = new Button(this.game, 300, 200, 'Start', 200, 100);
-        this.stage.backgroundColor = conf.Menu.background;
+        this.stage.backgroundColor = conf.Background.menu;
 
-        this.button.onClick.add(() => {
+        this.title = new Text(this.game, 250, 190, 'Start a game', 
+        {
+            width:300, 
+            height: 50,
+        });
+
+        this.createRoom = new Button(this.game, 250, 240, 'Create a room', 
+                300, 40);
+        this.joinRoom = new Button(this.game, 250, 300, 'Join a room', 300, 40);
+
+        this.createRoom.onClick.add(() => {
             this.game.state.start('play');
         });
-    }
+        this.joinRoom.onClick.add(() => {
+        });
 
+    }
 };
 
 module.exports = MainMenu;
 
-},{"./button.js":1,"./conf.json":2,"./load-font.js":4}],7:[function(require,module,exports){
+},{"./button.js":1,"./conf.json":2,"./load-font.js":4,"./text.js":14}],7:[function(require,module,exports){
 'use strict';
 
 const conf = require('./conf.json');
+
 const PlayState = require('./play-state.js');
+
+const PickUsername = require('./pick-username.js');
 const MainMenu = require('./main-menu.js');
 
-const game = new Phaser.Game(conf.GAME_W, conf.GAME_H, Phaser.WEBGL, '');
+let game = new Phaser.Game(conf.GAME_W, conf.GAME_H, Phaser.WEBGL, '');
 game.global = {};
 
 game.state.add('play', new PlayState());
 game.state.add('mainMenu', new MainMenu());
-game.state.start('mainMenu');
+game.state.add('pickUsername', new PickUsername());
 
-},{"./conf.json":2,"./main-menu.js":6,"./play-state.js":11}],8:[function(require,module,exports){
+game.state.start('pickUsername');
+
+},{"./conf.json":2,"./main-menu.js":6,"./pick-username.js":11,"./play-state.js":12}],8:[function(require,module,exports){
 class NetworkManager {
     constructor(game) {
         this.game = game;
@@ -584,31 +610,37 @@ class NetworkManager {
         //this.onlinePlayers = {};
         this.onKeyframeUpdate = new Phaser.Signal();
         this.onTileUpdate = new Phaser.Signal();
+        this.onRoomUpdate = new Phaser.Signal();
+        this.onJoinError = new Phaser.Signal();
 
-        const self = this;
-
-        this.ws.onopen = () => {
-            let url = window.parent.location.pathname;
-            console.log(url);
-
-            let gameId = url.substr(url.lastIndexOf('/') + 1);
-            self.ws.send(JSON.stringify({
-                type: 'connect',
-                gameId: gameId
-            }));
-        }
+        this.onGameStart = new Phaser.Signal();
 
         this.ws.onmessage = msgStr => {
             let msg = JSON.parse(msgStr.data);
 
             if (msg.type == 'keyframeUpdate') {
-                self.onKeyframeUpdate.dispatch(msg);
+                this.onKeyframeUpdate.dispatch(msg);
             } else if (msg.type == 'tileUpdate') {
-                self.onTileUpdate.dispatch(msg);
+                this.onTileUpdate.dispatch(msg);
             } else {
                 console.log('Received unknown message', msg);
             }
         }
+    }
+
+    joinRoom(roomId) {
+        this.sendOnOpen({
+            type: 'join',
+            roomId: roomId,
+            username: this.game.global.username
+        });
+    }
+
+    createRoom() {
+        this.sendOnOpen({
+            type: 'create',
+            username: this.game.global.username
+        });
     }
 
     sendTileUpdate(tile) {
@@ -640,11 +672,22 @@ class NetworkManager {
         });
     }
 
+    sendOnOpen(json) {
+        if (this.ws.readyState === WebSocket.OPeN) {
+                this.send(json);
+        } else {
+            this.ws.onopen = () => {
+                this.send(json);
+            }
+        }
+    }
+
     send(json) {
         if (this.ws.readyState !== WebSocket.OPEN) {
             return false;
         } else {
             this.ws.send(JSON.stringify(json));
+            return true;
         }
     }
 }
@@ -735,7 +778,46 @@ class OnlinePlayer extends Player {
 
 module.exports = OnlinePlayer;
 
-},{"./conf.json":2,"./player.js":12}],11:[function(require,module,exports){
+},{"./conf.json":2,"./player.js":13}],11:[function(require,module,exports){
+'use strict';
+const conf = require('./conf.json');
+
+const loadFont = require('./load-font.js');
+const Button = require('./button.js');
+const Text = require('./text.js');
+
+class PickUsername {
+    constructor() {}
+
+    preload() {
+        loadFont();
+        this.add.plugin(Fabrique.Plugins.InputField);
+    }
+    create() {
+        this.stage.backgroundColor = conf.Background.menu;
+        
+        this.label = new Text(this.game, 250, 200, 'Pick a username', {
+            width: 300,
+            height: 50
+        });
+
+        let inputStyle = Object.assign({}, conf.InputField, {
+            width: 290,
+            placeHolder: "Username"
+        });
+        this.input = this.add.inputField(250, 250, inputStyle);
+        this.button = new Button(this.game, 250, 300, 'Start', 300, 40);
+
+        this.button.onClick.add(() => {
+            this.game.global.username = this.input.value;
+            this.game.state.start('mainMenu');
+        });
+    }
+};
+
+module.exports = PickUsername;
+
+},{"./button.js":1,"./conf.json":2,"./load-font.js":4,"./text.js":14}],12:[function(require,module,exports){
 'use strict';
 
 const conf = require('./conf.json');
@@ -790,9 +872,11 @@ class PlayState {
         this.network.onTileUpdate.add(this.level.onTileUpdate.bind(this.level));
         this.network.onTileUpdate.add(console.log);
         this.restart = this.input.keyboard.addKey(Phaser.Keyboard.R);
+
+        this.stage.backgroundColor = conf.Background.play;
     }
 
-    update() {
+    update() { 
         this.physics.arcade.collide(this.player, this.level.platformLayer);
         this.network.sendKeyframe(this.player);
     }
@@ -800,7 +884,7 @@ class PlayState {
 
 module.exports = PlayState;
 
-},{"./conf.json":2,"./level.js":3,"./load-font.js":4,"./local-player.js":5,"./network-manager.js":8,"./online-player-manager.js":9,"./player.js":12,"./use-highlight.js":13}],12:[function(require,module,exports){
+},{"./conf.json":2,"./level.js":3,"./load-font.js":4,"./local-player.js":5,"./network-manager.js":8,"./online-player-manager.js":9,"./player.js":13,"./use-highlight.js":15}],13:[function(require,module,exports){
 const conf = require('./conf.json');
 
 class Player extends Phaser.Sprite {
@@ -816,7 +900,35 @@ class Player extends Phaser.Sprite {
 
 module.exports = Player;
 
-},{"./conf.json":2}],13:[function(require,module,exports){
+},{"./conf.json":2}],14:[function(require,module,exports){
+const conf = require('./conf.json');
+const loadFont = require('./load-font.js');
+
+class Text extends Phaser.Text {
+    constructor(game, x, y, text, pStyle) {
+        let style = Object.assign({}, conf.Text, pStyle);
+        super(game, x, y, text, style);
+
+        if ((style.width) && (style.height)) {
+            this.setTextBounds(
+                style.padding,
+                style.padding,
+                style.width - 2 * style.padding,
+                style.height - 2 * style.padding
+            );
+        }
+
+        loadFont().then(() => {
+            this.setText(text);
+        });
+
+        game.add.existing(this);
+    }
+}
+
+module.exports = Text;
+
+},{"./conf.json":2,"./load-font.js":4}],15:[function(require,module,exports){
 'use strict';
 const conf = require('./conf.json').Highlight;
 
@@ -895,4 +1007,13 @@ class UseManager extends Phaser.Graphics {
 
 module.exports = UseManager;
 
-},{"./conf.json":2}]},{},[7]);
+},{"./conf.json":2}],16:[function(require,module,exports){
+(function(){function m(a,b){document.addEventListener?a.addEventListener("scroll",b,!1):a.attachEvent("scroll",b)}function n(a){document.body?a():document.addEventListener?document.addEventListener("DOMContentLoaded",function c(){document.removeEventListener("DOMContentLoaded",c);a()}):document.attachEvent("onreadystatechange",function l(){if("interactive"==document.readyState||"complete"==document.readyState)document.detachEvent("onreadystatechange",l),a()})};function t(a){this.a=document.createElement("div");this.a.setAttribute("aria-hidden","true");this.a.appendChild(document.createTextNode(a));this.b=document.createElement("span");this.c=document.createElement("span");this.h=document.createElement("span");this.f=document.createElement("span");this.g=-1;this.b.style.cssText="max-width:none;display:inline-block;position:absolute;height:100%;width:100%;overflow:scroll;font-size:16px;";this.c.style.cssText="max-width:none;display:inline-block;position:absolute;height:100%;width:100%;overflow:scroll;font-size:16px;";
+this.f.style.cssText="max-width:none;display:inline-block;position:absolute;height:100%;width:100%;overflow:scroll;font-size:16px;";this.h.style.cssText="display:inline-block;width:200%;height:200%;font-size:16px;max-width:none;";this.b.appendChild(this.h);this.c.appendChild(this.f);this.a.appendChild(this.b);this.a.appendChild(this.c)}
+function x(a,b){a.a.style.cssText="max-width:none;min-width:20px;min-height:20px;display:inline-block;overflow:hidden;position:absolute;width:auto;margin:0;padding:0;top:-999px;left:-999px;white-space:nowrap;font:"+b+";"}function y(a){var b=a.a.offsetWidth,c=b+100;a.f.style.width=c+"px";a.c.scrollLeft=c;a.b.scrollLeft=a.b.scrollWidth+100;return a.g!==b?(a.g=b,!0):!1}function z(a,b){function c(){var a=l;y(a)&&a.a.parentNode&&b(a.g)}var l=a;m(a.b,c);m(a.c,c);y(a)};function A(a,b){var c=b||{};this.family=a;this.style=c.style||"normal";this.weight=c.weight||"normal";this.stretch=c.stretch||"normal"}var B=null,C=null,E=null,F=null;function I(){if(null===E){var a=document.createElement("div");try{a.style.font="condensed 100px sans-serif"}catch(b){}E=""!==a.style.font}return E}function J(a,b){return[a.style,a.weight,I()?a.stretch:"","100px",b].join(" ")}
+A.prototype.load=function(a,b){var c=this,l=a||"BESbswy",r=0,D=b||3E3,G=(new Date).getTime();return new Promise(function(a,b){var e;null===F&&(F=!!document.fonts);if(e=F)null===C&&(C=/OS X.*Version\/10\..*Safari/.test(navigator.userAgent)&&/Apple/.test(navigator.vendor)),e=!C;if(e){e=new Promise(function(a,b){function f(){(new Date).getTime()-G>=D?b():document.fonts.load(J(c,'"'+c.family+'"'),l).then(function(c){1<=c.length?a():setTimeout(f,25)},function(){b()})}f()});var K=new Promise(function(a,
+c){r=setTimeout(c,D)});Promise.race([K,e]).then(function(){clearTimeout(r);a(c)},function(){b(c)})}else n(function(){function e(){var b;if(b=-1!=g&&-1!=h||-1!=g&&-1!=k||-1!=h&&-1!=k)(b=g!=h&&g!=k&&h!=k)||(null===B&&(b=/AppleWebKit\/([0-9]+)(?:\.([0-9]+))/.exec(window.navigator.userAgent),B=!!b&&(536>parseInt(b[1],10)||536===parseInt(b[1],10)&&11>=parseInt(b[2],10))),b=B&&(g==u&&h==u&&k==u||g==v&&h==v&&k==v||g==w&&h==w&&k==w)),b=!b;b&&(d.parentNode&&d.parentNode.removeChild(d),clearTimeout(r),a(c))}
+function H(){if((new Date).getTime()-G>=D)d.parentNode&&d.parentNode.removeChild(d),b(c);else{var a=document.hidden;if(!0===a||void 0===a)g=f.a.offsetWidth,h=p.a.offsetWidth,k=q.a.offsetWidth,e();r=setTimeout(H,50)}}var f=new t(l),p=new t(l),q=new t(l),g=-1,h=-1,k=-1,u=-1,v=-1,w=-1,d=document.createElement("div");d.dir="ltr";x(f,J(c,"sans-serif"));x(p,J(c,"serif"));x(q,J(c,"monospace"));d.appendChild(f.a);d.appendChild(p.a);d.appendChild(q.a);document.body.appendChild(d);u=f.a.offsetWidth;v=p.a.offsetWidth;
+w=q.a.offsetWidth;H();z(f,function(a){g=a;e()});x(f,J(c,'"'+c.family+'",sans-serif'));z(p,function(a){h=a;e()});x(p,J(c,'"'+c.family+'",serif'));z(q,function(a){k=a;e()});x(q,J(c,'"'+c.family+'",monospace'))})})};"undefined"!==typeof module?module.exports=A:(window.FontFaceObserver=A,window.FontFaceObserver.prototype.load=A.prototype.load);}());
+
+},{}]},{},[7]);

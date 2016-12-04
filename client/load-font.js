@@ -1,4 +1,4 @@
-//const FontFaceObserver = require('fontfaceobserver');
+const FontFaceObserver = require('fontfaceobserver');
 const conf = require('./conf.json');
 
 module.exports = () => {

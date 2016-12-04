@@ -12,7 +12,8 @@ const conf = require('./config.json');
 const Room = require('./room.js');
 
 let app = express();
-app.use('/static', express.static(path.join(__dirname, '../build/static')));
+app.use('/static', express.static(path.join(__dirname, '../static')));
+app.use('/build', express.static(path.join(__dirname, '../build')));
 app.use('/assets', express.static(path.join(__dirname, '../assets')));
 
 
@@ -29,8 +30,7 @@ app.get('/play/:room', function(req, res) {
     if ((roomId in rooms) && (!rooms[roomId].canJoin())) {
         res.redirect('/');
     } else {
-        console.log(path.join(__dirname, '../build/index.html'));
-        res.sendFile(path.join(__dirname, '../build/index.html'));
+        res.sendFile(path.join(__dirname, '../static/index.html'));
     }
 });
 

@@ -6,31 +6,37 @@ class NetworkManager {
         //this.onlinePlayers = {};
         this.onKeyframeUpdate = new Phaser.Signal();
         this.onTileUpdate = new Phaser.Signal();
+        this.onRoomUpdate = new Phaser.Signal();
+        this.onJoinError = new Phaser.Signal();
 
-        const self = this;
-
-        this.ws.onopen = () => {
-            let url = window.parent.location.pathname;
-            console.log(url);
-
-            let gameId = url.substr(url.lastIndexOf('/') + 1);
-            self.ws.send(JSON.stringify({
-                type: 'connect',
-                gameId: gameId
-            }));
-        }
+        this.onGameStart = new Phaser.Signal();
 
         this.ws.onmessage = msgStr => {
             let msg = JSON.parse(msgStr.data);
 
             if (msg.type == 'keyframeUpdate') {
-                self.onKeyframeUpdate.dispatch(msg);
+                this.onKeyframeUpdate.dispatch(msg);
             } else if (msg.type == 'tileUpdate') {
-                self.onTileUpdate.dispatch(msg);
+                this.onTileUpdate.dispatch(msg);
             } else {
                 console.log('Received unknown message', msg);
             }
         }
+    }
+
+    joinRoom(roomId) {
+        this.sendOnOpen({
+            type: 'join',
+            roomId: roomId,
+            username: this.game.global.username
+        });
+    }
+
+    createRoom() {
+        this.sendOnOpen({
+            type: 'create',
+            username: this.game.global.username
+        });
     }
 
     sendTileUpdate(tile) {
@@ -62,11 +68,22 @@ class NetworkManager {
         });
     }
 
+    sendOnOpen(json) {
+        if (this.ws.readyState === WebSocket.OPeN) {
+                this.send(json);
+        } else {
+            this.ws.onopen = () => {
+                this.send(json);
+            }
+        }
+    }
+
     send(json) {
         if (this.ws.readyState !== WebSocket.OPEN) {
             return false;
         } else {
             this.ws.send(JSON.stringify(json));
+            return true;
         }
     }
 }

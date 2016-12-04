@@ -52,9 +52,11 @@ class PlayState {
         this.network.onTileUpdate.add(this.level.onTileUpdate.bind(this.level));
         this.network.onTileUpdate.add(console.log);
         this.restart = this.input.keyboard.addKey(Phaser.Keyboard.R);
+
+        this.stage.backgroundColor = conf.Background.play;
     }
 
-    update() {
+    update() { 
         this.physics.arcade.collide(this.player, this.level.platformLayer);
         this.network.sendKeyframe(this.player);
     }

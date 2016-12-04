@@ -17,7 +17,6 @@ class LocalPlayer extends Player {
 
         this.cursors = this.game.input.keyboard.createCursorKeys();
         this.jump = this.game.input.keyboard.addKey(Phaser.KeyCode.SPACEBAR);
-
     }
 
     update() {
@@ -27,6 +26,7 @@ class LocalPlayer extends Player {
 
         if (this.cursors.right.isDown) {
             this.body.velocity.x = xVelocity;
+            console.log('hi');
         } else if (this.cursors.left.isDown) {
             this.body.velocity.x = -xVelocity;
         } else {

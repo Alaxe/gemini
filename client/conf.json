@@ -6,10 +6,10 @@
     "Player": {
         "GRAVITY": 1600,
         "MAX_VELOCITY": {
-            "x": 400,
-            "y": 1500
+            "x": 1000,
+            "y": 1000
         },
-        "WALK_VELOCITY": 800,
+        "WALK_VELOCITY": 600,
         "AIR_VELOCITY": 300,
         "JUMP_VELOCITY": 800,
         "JUMP_INTERVAL_MS": 750,
@@ -28,27 +28,40 @@
     },
     "fonts": ["Roboto"],
     "Text": {
-        "font": "Roboto",
-        "fontSize": 25,
-        "fill": "#FFFFFF",
+        "font": "25px Roboto",
+        "fill": "#222",
         "wordWrap": true,
-        "wordWrapWidth": 180
+        "wordWrapWidth": 1000000,
+        "padding": 10,
+        "boundsAlignH": "center"
     },
     "Button": {
         "Text": {
             "boundsAlignH": "center",
-            "boundsAlignV": "middle"
+            "boundsAlignV": "middle",
+            "fill": "#FFFFFF"
         },
-        "Container": {
-            "rectRadius": 10,
-            "padding": 10,
-            "fill": 0x1C67FF,
-            "hover": 0x0C5CFC,
-            "width": 200,
-            "height": 50
-        }
+        "rectRadius": 10,
+        "padding": 10,
+        "fill": 0x1C67FF,
+        "hover": 0x0C5CFC,
+        "width": 200,
+        "height": 50
     },
-    "Menu": {
-        "background": "#314047"
+    "InputField": {
+        "fill": "#222",
+        "padding": 5,
+        "borderColor": "#1C67FF",
+        "borderRadius": 10,
+        "backgroundColor": "#eeeeee",
+        "cursorColor": "#222222",
+        "font": "20px Roboto",
+        "height": 25,
+        "width": 200
+
+    },
+    "Background": {
+        "menu": "#eee",
+        "play": "#435668"
     }
 }
