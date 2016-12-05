@@ -32,7 +32,6 @@
         "fill": "#222",
         "wordWrap": true,
         "wordWrapWidth": 1000000,
-        "padding": 10,
         "boundsAlignH": "center"
     },
     "Button": {
@@ -42,23 +41,22 @@
             "fill": "#FFFFFF"
         },
         "rectRadius": 10,
-        "padding": 10,
         "fill": 0x1C67FF,
         "hover": 0x0C5CFC,
-        "width": 200,
-        "height": 50
+        "width": 0.4,
+        "height": 0.1,
+        "margin": 4
     },
     "InputField": {
-        "fill": "#222",
-        "padding": 5,
+        "fill": "#222222",
         "borderColor": "#1C67FF",
         "borderRadius": 10,
-        "backgroundColor": "#eeeeee",
+        "backgroundColor": "#ffffff",
         "cursorColor": "#222222",
         "font": "20px Roboto",
-        "height": 25,
-        "width": 200
-
+        "height": 0.05,
+        "width": 0.25,
+        "padding": 5
     },
     "Background": {
         "menu": "#eee",

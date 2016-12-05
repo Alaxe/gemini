@@ -18,6 +18,10 @@ class NetworkManager {
                 this.onKeyframeUpdate.dispatch(msg);
             } else if (msg.type == 'tileUpdate') {
                 this.onTileUpdate.dispatch(msg);
+            } else if (msg.type == 'joinError') {
+                this.onJoinError.dispatch(msg);
+            } else if (msg.type == 'roomUpdate') {
+                this.onRoomUpdate.dispatch(msg);
             } else {
                 console.log('Received unknown message', msg);
             }
@@ -34,7 +38,7 @@ class NetworkManager {
 
     createRoom() {
         this.sendOnOpen({
-            type: 'create',
+            type: 'createRoom',
             username: this.game.global.username
         });
     }
@@ -69,7 +73,7 @@ class NetworkManager {
     }
 
     sendOnOpen(json) {
-        if (this.ws.readyState === WebSocket.OPeN) {
+        if (this.ws.readyState === WebSocket.OPEN) {
                 this.send(json);
         } else {
             this.ws.onopen = () => {

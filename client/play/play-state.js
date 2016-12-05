@@ -1,13 +1,12 @@
 'use strict';
 
-const conf = require('./conf.json');
+const conf = require('../conf.json');
 
 const Player = require('./player.js');
 const LocalPlayer = require('./local-player.js');
 const OnlinePlayerManager = require('./online-player-manager.js');
-const loadFont = require('./load-font.js');
 
-const NetworkManager = require('./network-manager.js');
+const NetworkManager = require('../network-manager.js');
 const Level = require('./level.js');
 const UseManager = require('./use-highlight.js');
 
@@ -22,8 +21,6 @@ class PlayState {
             Phaser.Tilemap.TILED_JSON);
 
         this.load.image('player', '../assets/player.png');
-
-        loadFont();
     }
     create() {
         this.physics.startSystem(Phaser.Physics.ARCADE);
@@ -56,7 +53,7 @@ class PlayState {
         this.stage.backgroundColor = conf.Background.play;
     }
 
-    update() { 
+    update() {
         this.physics.arcade.collide(this.player, this.level.platformLayer);
         this.network.sendKeyframe(this.player);
     }

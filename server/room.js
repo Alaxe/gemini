@@ -3,9 +3,10 @@ const EventEmitter = require('events');
 const conf = require('./config.json');
 
 class Room extends EventEmitter {
-    constructor() {
+    constructor(id) {
         super();
 
+        this.id = id;
         this.players = [];
     }
 
@@ -17,21 +18,12 @@ class Room extends EventEmitter {
         let msg = receivedMsg;
         msg.playerId = ws.id;
 
-        if (msg.type === 'tileUpdate') {
-            console.log(msg);
-        }
         let msgStr = JSON.stringify(msg);
 
-        for (let socket of this.players) {
-            if (socket === ws) {
-                continue;
+        for (let player of this.players) {
+            if (player.ws !== ws) {
+                player.ws.send(msgStr);
             }
-            /*setTimeout(() => {
-                socket.send(msgStr);
-            }, 100);*/
-
-            socket.send(msgStr);
-            //console.log('sent');
         }
     }
 
@@ -42,7 +34,25 @@ class Room extends EventEmitter {
         }
     }
 
-    addPlayer(ws) {
+    sendRoomUpdate() {
+        let msg = {
+            type: 'roomUpdate',
+            roomId: this.id,
+            players: []
+        };
+
+        for (let player of this.players) {
+            msg.players.push(player.username);
+        }
+
+        let msgStr = JSON.stringify(msg);
+
+        for (let player of this.players) {
+            player.ws.send(msgStr);
+        }
+    }
+
+    addPlayer(ws, msg) {
         const room = this;
 
         ws.id = this.players.length;
@@ -52,6 +62,8 @@ class Room extends EventEmitter {
 
             if (msg.type === 'broadcast') {
                 room.broadcast(ws, msg.body);
+            } else if (msg.type == 'start') {
+
             } else {
                 throw new Error({
                     type: 'invalid message',
@@ -59,15 +71,18 @@ class Room extends EventEmitter {
                     body: msg
                 });
             }
-
         });
+
+        this.sendRoomUpdate();
 
         ws.on('close', () => {
             room.disconnect(ws);
         });
 
-        this.players.push(ws);
-//        console.log(this.players);
+        this.players.push({
+            ws: ws,
+            username: msg.username || ''
+        });
     }
 };
 

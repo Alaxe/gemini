@@ -1,5 +1,6 @@
+'use strict';
+const conf = require('../conf.json');
 const Player = require('./player.js');
-const conf = require('./conf.json');
 
 let onlinePlayersById = {}
 

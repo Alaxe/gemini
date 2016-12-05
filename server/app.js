@@ -3,10 +3,8 @@
 const express = require('express');
 const http = require('http');
 const path = require('path');
-const process = require('process');
-const randomstring = require('randomstring');
-const url = require('url');
 const ws = require('ws');
+const randomstring = require('randomstring');
 
 const conf = require('./config.json');
 const Room = require('./room.js');
@@ -17,21 +15,11 @@ app.use('/build', express.static(path.join(__dirname, '../build')));
 app.use('/assets', express.static(path.join(__dirname, '../assets')));
 
 
-let rooms = {};
 app.get('/', function(req, res) {
-    let key = randomstring.generate(8);
-    res.redirect('/play/' + key);
+    res.redirect('/play/');
 });
-app.get('/play/:room', function(req, res) {
-    res.sen
-    let roomId = req.params.room;
-    let room;
-
-    if ((roomId in rooms) && (!rooms[roomId].canJoin())) {
-        res.redirect('/');
-    } else {
-        res.sendFile(path.join(__dirname, '../static/index.html'));
-    }
+app.get('/play/', function(req, res) {
+    res.sendFile(path.join(__dirname, '../static/index.html'));
 });
 
 let server = http.createServer();
@@ -46,27 +34,51 @@ let wss = new ws.Server({
     port: conf.WS_PORT
 });
 
+let rooms = {};
+
+function generateRoomId() {
+    return randomstring.generate({
+        length: 6,
+        charset: 'alphanumeric',
+        capitalization: 'lowercase'
+    });
+}
+
+function initConnection(ws, msgStr) {
+    let msg = JSON.parse(msgStr);
+
+    if (msg.type == 'joinRoom') {
+        if (!(msg.gameId in rooms)) {
+            ws.send(JSON.stringify({
+                type: 'joinError',
+                content: 'The specified room doesn\'t exist'
+            }));
+        } else if (!(rooms[msg.gameId].canJoin())) {
+            ws.send(JSON.stringify({
+                type: 'joinError',
+                content: 'The specified room is full'
+            }));
+        } else {
+            ws.removeListener('message', msg => {
+                initConnection(ws, msg);
+            });
+            rooms[msg.gameId].addPlayer(ws, msg);
+        }
+    } else if (msg.type == 'createRoom') {
+        ws.removeListener('message', initConnection);
+
+        let id = generateRoomId();
+        rooms[id]= new Room(id);
+        rooms[id].on('playerLeave', (ws) => {
+            ws.on('message', initConnection);
+        });
+
+        rooms[id].addPlayer(ws, msg);
+    }
+}
 
 wss.on('connection', function(ws) {
-    ws.once('message', function initConnect(msgStr) {
-        console.log(msgStr);
-        let msg = JSON.parse(msgStr);
-
-        if (msg.type != 'connect') {
-            ws.close();
-        }
-
-        if (!(msg.gameId in rooms)) {
-            rooms[msg.gameId] = new Room();
-            rooms[msg.gameId].on('gameEnd', () => {
-                delete rooms[msg.gameId];
-            });
-        }
-
-        if (!rooms[msg.gameId].canJoin()) {
-            ws.close();
-        } else {
-            rooms[msg.gameId].addPlayer(ws);
-        }
+    ws.on('message', msg => {
+        initConnection(ws, msg);
     });
 });

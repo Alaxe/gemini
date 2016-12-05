@@ -1,4 +1,5 @@
-const conf = require('./conf.json');
+'use strict';
+const conf = require('../conf.json');
 const Player = require('./player.js');
 
 class LocalPlayer extends Player {
@@ -26,13 +27,11 @@ class LocalPlayer extends Player {
 
         if (this.cursors.right.isDown) {
             this.body.velocity.x = xVelocity;
-            console.log('hi');
         } else if (this.cursors.left.isDown) {
             this.body.velocity.x = -xVelocity;
         } else {
             this.body.velocity.x = 0;
         }
-
 
         if ((this.body.onFloor()) && (this.jump.isDown) &&
                 (this.game.time.now >= this.nextJump)) {

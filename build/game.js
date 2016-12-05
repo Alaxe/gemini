@@ -1,58 +1,4 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-const conf = require('./conf.json');
-const Text = require('./text.js');
-
-class Button extends Phaser.Group {
-    constructor(game, x, y, label, width, height) {
-        super(game);
-
-        this.x = x;
-        this.y = y;
-        this.onClick = new Phaser.Signal();
-
-        width = width || conf.Button.width;
-        height = height || conf.Button.height;
-
-        this.background = game.add.graphics();
-
-        this.background.beginFill(0xFFFFFFF);
-        this.background.drawRoundedRect(0, 0, width, height,
-            conf.Button.rectRadius);
-        this.background.endFill();
-
-        this.background.tint = conf.Button.fill;
-
-        this.background.inputEnabled = true;
-
-        this.background.events.onInputOver.add(() => {
-            this.background.tint = conf.Button.hover;
-        })
-        this.background.events.onInputOut.add(() => {
-            this.background.tint = conf.Button.fill;
-        });
-        this.background.events.onInputDown.add(() => {
-            this.onClick.dispatch();
-        });
-
-        this.background.tint = conf.Button.fill;
-
-        this.add(this.background);
-
-        this.text = new Text(game, 0, 0, label, Object.assign(
-            {},
-            conf.Button.Text,
-            {
-                width: width,
-                height: height
-            }
-        ));
-        this.add(this.text);
-    }
-};
-
-module.exports = Button;
-
-},{"./conf.json":2,"./text.js":14}],2:[function(require,module,exports){
 module.exports={
     "GAME_W": 800,
     "GAME_H": 500,
@@ -87,7 +33,6 @@ module.exports={
         "fill": "#222",
         "wordWrap": true,
         "wordWrapWidth": 1000000,
-        "padding": 10,
         "boundsAlignH": "center"
     },
     "Button": {
@@ -97,23 +42,22 @@ module.exports={
             "fill": "#FFFFFF"
         },
         "rectRadius": 10,
-        "padding": 10,
         "fill": 0x1C67FF,
         "hover": 0x0C5CFC,
-        "width": 200,
-        "height": 50
+        "width": 0.4,
+        "height": 0.1,
+        "margin": 4
     },
     "InputField": {
-        "fill": "#222",
-        "padding": 5,
+        "fill": "#222222",
         "borderColor": "#1C67FF",
         "borderRadius": 10,
-        "backgroundColor": "#eeeeee",
+        "backgroundColor": "#ffffff",
         "cursorColor": "#222222",
         "font": "20px Roboto",
-        "height": 25,
-        "width": 200
-
+        "height": 0.05,
+        "width": 0.25,
+        "padding": 5
     },
     "Background": {
         "menu": "#eee",
@@ -121,7 +65,237 @@ module.exports={
     }
 }
 
-},{}],3:[function(require,module,exports){
+},{}],2:[function(require,module,exports){
+'use strict';
+
+const conf = require('./conf.json');
+const NetworkManager = require('./network-manager.js');
+
+const PlayState = require('./play/play-state.js');
+const Username = require('./menus/username.js');
+const MainMenu = require('./menus/main-menu.js');
+const Lobby = require('./menus/lobby.js');
+const JoinRoom = require('./menus/join-room.js');
+
+let game = new Phaser.Game(conf.GAME_W, conf.GAME_H, Phaser.WEBGL, '');
+
+game.global = {
+    network: new NetworkManager(game)
+};
+
+
+game.state.add('play', new PlayState());
+game.state.add('mainMenu', new MainMenu());
+game.state.add('username', new Username());
+game.state.add('lobby', new Lobby());
+game.state.add('joinRoom', new JoinRoom());
+
+game.state.start('username');
+
+},{"./conf.json":1,"./menus/join-room.js":3,"./menus/lobby.js":4,"./menus/main-menu.js":5,"./menus/username.js":6,"./network-manager.js":7,"./play/play-state.js":12}],3:[function(require,module,exports){
+'use strict';
+const conf = require('../conf.json');
+const ui = require('../ui');
+
+class JoinRoom {
+    preload() {}
+    create() {
+        this.title = new ui.Text(this.game, 0.3, 0.35, 'Enter room code', {
+            width: 0.4,
+            height: 0.1
+        });
+        this.idInput = new ui.InputField(this.game, 0.3, 0.45, {
+            width: 0.4,
+            placeHolder: 'Room Id'
+        });
+
+        this.join = new ui.Button(this.game, 0.3, 0.55, 'Join', 0.2, 0.1);
+        this.back = new ui.Button(this.game, 0.5, 0.55, 'Back', 0.2, 0.1);
+
+        this.back.onClick.add(() => {
+            this.game.state.start('mainMenu');
+        });
+    }
+};
+
+module.exports = JoinRoom;
+
+},{"../conf.json":1,"../ui":16}],4:[function(require,module,exports){
+'use strict';
+const conf = require('../conf.json');
+const ui = require('../ui');
+
+class Lobby {
+    create(){};
+}
+
+module.exports = Lobby;
+
+},{"../conf.json":1,"../ui":16}],5:[function(require,module,exports){
+'use strict';
+const conf = require('../conf.json');
+const ui = require('../ui');
+
+class MainMenu {
+    init() {}
+    preload() {
+        ui.util.loadFont();
+    }
+    create() {
+        this.stage.backgroundColor = conf.Background.menu;
+
+        this.title = new ui.Text(this.game, 0.3, 0.4, 'Start a game',
+        {
+            width: 0.4,
+            height: 0.1,
+        });
+
+        this.createRoom = new ui.Button(this.game, 0.3, 0.5, 'Create a room');
+        this.joinRoom = new ui.Button(this.game, 0.3, 0.6, 'Join a room');
+
+        this.createRoom.onClick.add(() => {
+            this.game.state.start('lobby');
+            this.game.global.network.createRoom();
+        });
+        this.joinRoom.onClick.add(() => {
+            this.game.state.start('joinRoom');
+        });
+
+    }
+};
+
+module.exports = MainMenu;
+
+},{"../conf.json":1,"../ui":16}],6:[function(require,module,exports){
+'use strict';
+const conf = require('../conf.json');
+const ui = require('../ui');
+
+class Username {
+    preload() {
+        ui.util.loadFont();
+    }
+    create() {
+        this.stage.backgroundColor = conf.Background.menu;
+
+        this.label = new ui.Text(this.game, 0.3, 0.4, 'Pick a username', {
+            width: 0.4,
+            height: 0.1
+        });
+
+        this.button = new ui.Button(this.game, 0.3, 0.6, 'Start');
+        this.input = new ui.InputField(this.game, 0.3, 0.5, {
+            width: 0.4,
+            placeHolder: 'Username'
+        });
+
+        this.button.onClick.add(() => {
+            this.game.global.username = this.input.getValue();
+            this.game.state.start('mainMenu');
+        });
+    }
+};
+
+module.exports = Username;
+
+},{"../conf.json":1,"../ui":16}],7:[function(require,module,exports){
+class NetworkManager {
+    constructor(game) {
+        this.game = game;
+        this.ws = new WebSocket(`ws://${document.location.hostname}:7001`);
+
+        //this.onlinePlayers = {};
+        this.onKeyframeUpdate = new Phaser.Signal();
+        this.onTileUpdate = new Phaser.Signal();
+        this.onRoomUpdate = new Phaser.Signal();
+        this.onJoinError = new Phaser.Signal();
+
+        this.onGameStart = new Phaser.Signal();
+
+        this.ws.onmessage = msgStr => {
+            let msg = JSON.parse(msgStr.data);
+
+            if (msg.type == 'keyframeUpdate') {
+                this.onKeyframeUpdate.dispatch(msg);
+            } else if (msg.type == 'tileUpdate') {
+                this.onTileUpdate.dispatch(msg);
+            } else if (msg.type == 'joinError') {
+                this.onJoinError.dispatch(msg);
+            } else if (msg.type == 'roomUpdate') {
+                this.onRoomUpdate.dispatch(msg);
+            } else {
+                console.log('Received unknown message', msg);
+            }
+        }
+    }
+
+    joinRoom(roomId) {
+        this.sendOnOpen({
+            type: 'join',
+            roomId: roomId,
+            username: this.game.global.username
+        });
+    }
+
+    createRoom() {
+        this.sendOnOpen({
+            type: 'createRoom',
+            username: this.game.global.username
+        });
+    }
+
+    sendTileUpdate(tile) {
+        console.log(tile, tile.id);
+        this.send({
+            type: 'broadcast',
+            body: {
+                type: 'tileUpdate',
+                x: tile.x,
+                y: tile.y,
+                layer: tile.layer.name,
+                index: tile.index,
+                properties: {
+                    onUseId: tile.properties.onUseId
+                }
+            }
+        });
+    }
+
+    sendKeyframe(player) {
+        this.send({
+            type: 'broadcast',
+            body: {
+                type: 'keyframeUpdate',
+                x: player.x,
+                y: player.y,
+                time: this.game.time.now
+            }
+        });
+    }
+
+    sendOnOpen(json) {
+        if (this.ws.readyState === WebSocket.OPEN) {
+                this.send(json);
+        } else {
+            this.ws.onopen = () => {
+                this.send(json);
+            }
+        }
+    }
+
+    send(json) {
+        if (this.ws.readyState !== WebSocket.OPEN) {
+            return false;
+        } else {
+            this.ws.send(JSON.stringify(json));
+            return true;
+        }
+    }
+}
+
+module.exports = NetworkManager;
+
+},{}],8:[function(require,module,exports){
 'use strict';
 function rotateMask(mask, rotationRad) {
     let rotCnt = Math.round(rotationRad / Math.PI * 2);
@@ -477,20 +651,9 @@ class Level {
 }
 module.exports = Level;
 
-},{}],4:[function(require,module,exports){
-const FontFaceObserver = require('fontfaceobserver');
-const conf = require('./conf.json');
-
-module.exports = () => {
-    let promises = [];
-    for (let font of conf.fonts) {
-        promises.push(new FontFaceObserver(font).load());
-    }
-    return Promise.all(promises);
-}
-
-},{"./conf.json":2,"fontfaceobserver":16}],5:[function(require,module,exports){
-const conf = require('./conf.json');
+},{}],9:[function(require,module,exports){
+'use strict';
+const conf = require('../conf.json');
 const Player = require('./player.js');
 
 class LocalPlayer extends Player {
@@ -518,13 +681,11 @@ class LocalPlayer extends Player {
 
         if (this.cursors.right.isDown) {
             this.body.velocity.x = xVelocity;
-            console.log('hi');
         } else if (this.cursors.left.isDown) {
             this.body.velocity.x = -xVelocity;
         } else {
             this.body.velocity.x = 0;
         }
-
 
         if ((this.body.onFloor()) && (this.jump.isDown) &&
                 (this.game.time.now >= this.nextJump)) {
@@ -543,158 +704,8 @@ class LocalPlayer extends Player {
 
 module.exports = LocalPlayer;
 
-},{"./conf.json":2,"./player.js":13}],6:[function(require,module,exports){
-const conf = require('./conf.json');
-
-const loadFont = require('./load-font.js');
-const Button = require('./button.js');
-const Text = require('./text.js');
-
-class MainMenu {
-    constructor() {}
-
-    init() {}
-    preload() {
-        loadFont();
-        this.add.plugin(Fabrique.Plugins.InputField);
-    }
-    create() {
-        this.stage.backgroundColor = conf.Background.menu;
-
-        this.title = new Text(this.game, 250, 190, 'Start a game', 
-        {
-            width:300, 
-            height: 50,
-        });
-
-        this.createRoom = new Button(this.game, 250, 240, 'Create a room', 
-                300, 40);
-        this.joinRoom = new Button(this.game, 250, 300, 'Join a room', 300, 40);
-
-        this.createRoom.onClick.add(() => {
-            this.game.state.start('play');
-        });
-        this.joinRoom.onClick.add(() => {
-        });
-
-    }
-};
-
-module.exports = MainMenu;
-
-},{"./button.js":1,"./conf.json":2,"./load-font.js":4,"./text.js":14}],7:[function(require,module,exports){
+},{"../conf.json":1,"./player.js":13}],10:[function(require,module,exports){
 'use strict';
-
-const conf = require('./conf.json');
-
-const PlayState = require('./play-state.js');
-
-const PickUsername = require('./pick-username.js');
-const MainMenu = require('./main-menu.js');
-
-let game = new Phaser.Game(conf.GAME_W, conf.GAME_H, Phaser.WEBGL, '');
-game.global = {};
-
-game.state.add('play', new PlayState());
-game.state.add('mainMenu', new MainMenu());
-game.state.add('pickUsername', new PickUsername());
-
-game.state.start('pickUsername');
-
-},{"./conf.json":2,"./main-menu.js":6,"./pick-username.js":11,"./play-state.js":12}],8:[function(require,module,exports){
-class NetworkManager {
-    constructor(game) {
-        this.game = game;
-        this.ws = new WebSocket(`ws://${document.location.hostname}:7001`);
-
-        //this.onlinePlayers = {};
-        this.onKeyframeUpdate = new Phaser.Signal();
-        this.onTileUpdate = new Phaser.Signal();
-        this.onRoomUpdate = new Phaser.Signal();
-        this.onJoinError = new Phaser.Signal();
-
-        this.onGameStart = new Phaser.Signal();
-
-        this.ws.onmessage = msgStr => {
-            let msg = JSON.parse(msgStr.data);
-
-            if (msg.type == 'keyframeUpdate') {
-                this.onKeyframeUpdate.dispatch(msg);
-            } else if (msg.type == 'tileUpdate') {
-                this.onTileUpdate.dispatch(msg);
-            } else {
-                console.log('Received unknown message', msg);
-            }
-        }
-    }
-
-    joinRoom(roomId) {
-        this.sendOnOpen({
-            type: 'join',
-            roomId: roomId,
-            username: this.game.global.username
-        });
-    }
-
-    createRoom() {
-        this.sendOnOpen({
-            type: 'create',
-            username: this.game.global.username
-        });
-    }
-
-    sendTileUpdate(tile) {
-        console.log(tile, tile.id);
-        this.send({
-            type: 'broadcast',
-            body: {
-                type: 'tileUpdate',
-                x: tile.x,
-                y: tile.y,
-                layer: tile.layer.name,
-                index: tile.index,
-                properties: {
-                    onUseId: tile.properties.onUseId
-                }
-            }
-        });
-    }
-
-    sendKeyframe(player) {
-        this.send({
-            type: 'broadcast',
-            body: {
-                type: 'keyframeUpdate',
-                x: player.x,
-                y: player.y,
-                time: this.game.time.now
-            }
-        });
-    }
-
-    sendOnOpen(json) {
-        if (this.ws.readyState === WebSocket.OPeN) {
-                this.send(json);
-        } else {
-            this.ws.onopen = () => {
-                this.send(json);
-            }
-        }
-    }
-
-    send(json) {
-        if (this.ws.readyState !== WebSocket.OPEN) {
-            return false;
-        } else {
-            this.ws.send(JSON.stringify(json));
-            return true;
-        }
-    }
-}
-
-module.exports = NetworkManager;
-
-},{}],9:[function(require,module,exports){
 const OnlinePlayer = require('./online-player.js');
 
 class OnlinePlayerManager {
@@ -717,9 +728,10 @@ class OnlinePlayerManager {
 }
 module.exports = OnlinePlayerManager;
 
-},{"./online-player.js":10}],10:[function(require,module,exports){
+},{"./online-player.js":11}],11:[function(require,module,exports){
+'use strict';
+const conf = require('../conf.json');
 const Player = require('./player.js');
-const conf = require('./conf.json');
 
 let onlinePlayersById = {}
 
@@ -778,56 +790,16 @@ class OnlinePlayer extends Player {
 
 module.exports = OnlinePlayer;
 
-},{"./conf.json":2,"./player.js":13}],11:[function(require,module,exports){
-'use strict';
-const conf = require('./conf.json');
-
-const loadFont = require('./load-font.js');
-const Button = require('./button.js');
-const Text = require('./text.js');
-
-class PickUsername {
-    constructor() {}
-
-    preload() {
-        loadFont();
-        this.add.plugin(Fabrique.Plugins.InputField);
-    }
-    create() {
-        this.stage.backgroundColor = conf.Background.menu;
-        
-        this.label = new Text(this.game, 250, 200, 'Pick a username', {
-            width: 300,
-            height: 50
-        });
-
-        let inputStyle = Object.assign({}, conf.InputField, {
-            width: 290,
-            placeHolder: "Username"
-        });
-        this.input = this.add.inputField(250, 250, inputStyle);
-        this.button = new Button(this.game, 250, 300, 'Start', 300, 40);
-
-        this.button.onClick.add(() => {
-            this.game.global.username = this.input.value;
-            this.game.state.start('mainMenu');
-        });
-    }
-};
-
-module.exports = PickUsername;
-
-},{"./button.js":1,"./conf.json":2,"./load-font.js":4,"./text.js":14}],12:[function(require,module,exports){
+},{"../conf.json":1,"./player.js":13}],12:[function(require,module,exports){
 'use strict';
 
-const conf = require('./conf.json');
+const conf = require('../conf.json');
 
 const Player = require('./player.js');
 const LocalPlayer = require('./local-player.js');
 const OnlinePlayerManager = require('./online-player-manager.js');
-const loadFont = require('./load-font.js');
 
-const NetworkManager = require('./network-manager.js');
+const NetworkManager = require('../network-manager.js');
 const Level = require('./level.js');
 const UseManager = require('./use-highlight.js');
 
@@ -842,8 +814,6 @@ class PlayState {
             Phaser.Tilemap.TILED_JSON);
 
         this.load.image('player', '../assets/player.png');
-
-        loadFont();
     }
     create() {
         this.physics.startSystem(Phaser.Physics.ARCADE);
@@ -876,7 +846,7 @@ class PlayState {
         this.stage.backgroundColor = conf.Background.play;
     }
 
-    update() { 
+    update() {
         this.physics.arcade.collide(this.player, this.level.platformLayer);
         this.network.sendKeyframe(this.player);
     }
@@ -884,8 +854,9 @@ class PlayState {
 
 module.exports = PlayState;
 
-},{"./conf.json":2,"./level.js":3,"./load-font.js":4,"./local-player.js":5,"./network-manager.js":8,"./online-player-manager.js":9,"./player.js":13,"./use-highlight.js":15}],13:[function(require,module,exports){
-const conf = require('./conf.json');
+},{"../conf.json":1,"../network-manager.js":7,"./level.js":8,"./local-player.js":9,"./online-player-manager.js":10,"./player.js":13,"./use-highlight.js":14}],13:[function(require,module,exports){
+'use strict';
+const conf = require('../conf.json');
 
 class Player extends Phaser.Sprite {
     constructor(game, x = 0, y = 0) {
@@ -900,37 +871,9 @@ class Player extends Phaser.Sprite {
 
 module.exports = Player;
 
-},{"./conf.json":2}],14:[function(require,module,exports){
-const conf = require('./conf.json');
-const loadFont = require('./load-font.js');
-
-class Text extends Phaser.Text {
-    constructor(game, x, y, text, pStyle) {
-        let style = Object.assign({}, conf.Text, pStyle);
-        super(game, x, y, text, style);
-
-        if ((style.width) && (style.height)) {
-            this.setTextBounds(
-                style.padding,
-                style.padding,
-                style.width - 2 * style.padding,
-                style.height - 2 * style.padding
-            );
-        }
-
-        loadFont().then(() => {
-            this.setText(text);
-        });
-
-        game.add.existing(this);
-    }
-}
-
-module.exports = Text;
-
-},{"./conf.json":2,"./load-font.js":4}],15:[function(require,module,exports){
+},{"../conf.json":1}],14:[function(require,module,exports){
 'use strict';
-const conf = require('./conf.json').Highlight;
+const conf = require('../conf.json').Highlight;
 
 class UseManager extends Phaser.Graphics {
     constructor(game, level, player) {
@@ -1007,7 +950,160 @@ class UseManager extends Phaser.Graphics {
 
 module.exports = UseManager;
 
-},{"./conf.json":2}],16:[function(require,module,exports){
+},{"../conf.json":1}],15:[function(require,module,exports){
+'use strict';
+const conf = require('../conf.json').Button;
+const util = require('./util.js');
+const Text = require('./text.js');
+
+class Button extends Phaser.Group {
+    constructor(game, x, y, label, width, height) {
+        super(game);
+
+        this.x = util.hPx(x);
+        this.y = util.vPx(y);
+        this.onClick = new Phaser.Signal();
+
+        width = width || conf.width;
+        height = height || conf.height;
+
+        let bgWidthPx = util.hPx(width) - 2 * conf.margin;
+        let bgHeightPx = util.vPx(height) - 2 * conf.margin;
+        let bgXPx = conf.margin;
+        let bgYPx = conf.margin;
+        let bgRadius = conf.rectRadius;
+
+        this.bg = game.add.graphics();
+
+        this.bg.beginFill(0xFFFFFFF);
+        this.bg.drawRoundedRect(bgXPx, bgYPx, bgWidthPx, bgHeightPx, bgRadius);
+        this.bg.endFill();
+
+        this.bg.tint = conf.fill;
+
+        this.bg.inputEnabled = true;
+
+        this.bg.events.onInputOver.add(() => {
+            this.bg.tint = conf.hover;
+        })
+        this.bg.events.onInputOut.add(() => {
+            this.bg.tint = conf.fill;
+        });
+        this.bg.events.onInputDown.add(() => {
+            this.onClick.dispatch();
+        });
+
+        this.bg.tint = conf.fill;
+
+        this.add(this.bg);
+
+        let textStyle = Object.assign({},
+            conf.Text, {
+                width: width - util.hPart(conf.margin),
+                height: height - util.vPart(conf.margin)
+            }
+        );
+
+        this.text = new Text(game, 0, 0, label, textStyle);
+        this.add(this.text);
+    }
+};
+
+module.exports = Button;
+
+},{"../conf.json":1,"./text.js":18,"./util.js":19}],16:[function(require,module,exports){
+'use strict';
+module.exports = {
+    Button: require('./button.js'),
+    InputField: require('./input-field.js'),
+    Text: require('./text.js'),
+    util: require('./util.js')
+};
+
+},{"./button.js":15,"./input-field.js":17,"./text.js":18,"./util.js":19}],17:[function(require,module,exports){
+'use strict';
+const conf = require('../conf.json');
+const utils = require('./util.js');
+
+class InputField {
+    constructor(game, x, y, options) {
+        game.add.plugin(Fabrique.Plugins.InputField);
+
+        let xPx = utils.hPx(x);
+        let yPx = utils.vPx(y);
+
+        let style = Object.assign({}, conf.InputField, options);
+        style.width = utils.hPx(style.width) - 2 * style.padding;
+        style.height = utils.vPx(style.height) - 2 * style.padding;
+
+        this.inputField = game.add.inputField(xPx, yPx, style);
+    }
+    getValue() {
+        return this.inputField.value;
+    }
+};
+
+module.exports = InputField;
+
+},{"../conf.json":1,"./util.js":19}],18:[function(require,module,exports){
+'use strict';
+const conf = require('../conf.json');
+const util = require('./util.js');
+
+class Text extends Phaser.Text {
+    constructor(game, x, y, text, pStyle) {
+        let style = Object.assign({}, conf.Text, pStyle);
+
+        let xPx = util.hPx(x);
+        let yPx = util.vPx(y);
+        super(game, xPx, yPx, text, style);
+
+        if ((style.width) && (style.height)) {
+            let widthPx = util.hPx(style.width);
+            let heightPx = util.vPx(style.height);
+
+            this.setTextBounds(0, 0, widthPx, heightPx);
+        }
+
+        //Redraws the text after the font has loaded
+        util.loadFont().then(() => {
+            this.setText(text);
+        });
+
+        game.add.existing(this);
+    }
+}
+
+module.exports = Text;
+
+},{"../conf.json":1,"./util.js":19}],19:[function(require,module,exports){
+'use strict';
+const conf = require('../conf.json');
+const FontFaceObserver = require('fontfaceobserver');
+
+module.exports = {
+    hPx: part => {
+        return part * conf.GAME_W;
+    },
+    vPx: part => {
+        return part * conf.GAME_H;
+    },
+    hPart: px => {
+        return px / conf.GAME_W;
+    },
+    vPart: px => {
+        return px / conf.GAME_H;
+    },
+    loadFont: () => {
+        let promises = [];
+        for (let font of conf.fonts) {
+            promises.push(new FontFaceObserver(font).load());
+        }
+        return Promise.all(promises);
+    }
+};
+
+},{"../conf.json":1,"fontfaceobserver":20}],20:[function(require,module,exports){
 (function(){function m(a,b){document.addEventListener?a.addEventListener("scroll",b,!1):a.attachEvent("scroll",b)}function n(a){document.body?a():document.addEventListener?document.addEventListener("DOMContentLoaded",function c(){document.removeEventListener("DOMContentLoaded",c);a()}):document.attachEvent("onreadystatechange",function l(){if("interactive"==document.readyState||"complete"==document.readyState)document.detachEvent("onreadystatechange",l),a()})};function t(a){this.a=document.createElement("div");this.a.setAttribute("aria-hidden","true");this.a.appendChild(document.createTextNode(a));this.b=document.createElement("span");this.c=document.createElement("span");this.h=document.createElement("span");this.f=document.createElement("span");this.g=-1;this.b.style.cssText="max-width:none;display:inline-block;position:absolute;height:100%;width:100%;overflow:scroll;font-size:16px;";this.c.style.cssText="max-width:none;display:inline-block;position:absolute;height:100%;width:100%;overflow:scroll;font-size:16px;";
 this.f.style.cssText="max-width:none;display:inline-block;position:absolute;height:100%;width:100%;overflow:scroll;font-size:16px;";this.h.style.cssText="display:inline-block;width:200%;height:200%;font-size:16px;max-width:none;";this.b.appendChild(this.h);this.c.appendChild(this.f);this.a.appendChild(this.b);this.a.appendChild(this.c)}
 function x(a,b){a.a.style.cssText="max-width:none;min-width:20px;min-height:20px;display:inline-block;overflow:hidden;position:absolute;width:auto;margin:0;padding:0;top:-999px;left:-999px;white-space:nowrap;font:"+b+";"}function y(a){var b=a.a.offsetWidth,c=b+100;a.f.style.width=c+"px";a.c.scrollLeft=c;a.b.scrollLeft=a.b.scrollWidth+100;return a.g!==b?(a.g=b,!0):!1}function z(a,b){function c(){var a=l;y(a)&&a.a.parentNode&&b(a.g)}var l=a;m(a.b,c);m(a.c,c);y(a)};function A(a,b){var c=b||{};this.family=a;this.style=c.style||"normal";this.weight=c.weight||"normal";this.stretch=c.stretch||"normal"}var B=null,C=null,E=null,F=null;function I(){if(null===E){var a=document.createElement("div");try{a.style.font="condensed 100px sans-serif"}catch(b){}E=""!==a.style.font}return E}function J(a,b){return[a.style,a.weight,I()?a.stretch:"","100px",b].join(" ")}
@@ -1016,4 +1112,4 @@ c){r=setTimeout(c,D)});Promise.race([K,e]).then(function(){clearTimeout(r);a(c)}
 function H(){if((new Date).getTime()-G>=D)d.parentNode&&d.parentNode.removeChild(d),b(c);else{var a=document.hidden;if(!0===a||void 0===a)g=f.a.offsetWidth,h=p.a.offsetWidth,k=q.a.offsetWidth,e();r=setTimeout(H,50)}}var f=new t(l),p=new t(l),q=new t(l),g=-1,h=-1,k=-1,u=-1,v=-1,w=-1,d=document.createElement("div");d.dir="ltr";x(f,J(c,"sans-serif"));x(p,J(c,"serif"));x(q,J(c,"monospace"));d.appendChild(f.a);d.appendChild(p.a);d.appendChild(q.a);document.body.appendChild(d);u=f.a.offsetWidth;v=p.a.offsetWidth;
 w=q.a.offsetWidth;H();z(f,function(a){g=a;e()});x(f,J(c,'"'+c.family+'",sans-serif'));z(p,function(a){h=a;e()});x(p,J(c,'"'+c.family+'",serif'));z(q,function(a){k=a;e()});x(q,J(c,'"'+c.family+'",monospace'))})})};"undefined"!==typeof module?module.exports=A:(window.FontFaceObserver=A,window.FontFaceObserver.prototype.load=A.prototype.load);}());
 
-},{}]},{},[7]);
+},{}]},{},[2]);

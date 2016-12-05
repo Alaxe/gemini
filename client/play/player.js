@@ -1,4 +1,5 @@
-const conf = require('./conf.json');
+'use strict';
+const conf = require('../conf.json');
 
 class Player extends Phaser.Sprite {
     constructor(game, x = 0, y = 0) {

@@ -1,5 +1,5 @@
 'use strict';
-const conf = require('./conf.json').Highlight;
+const conf = require('../conf.json').Highlight;
 
 class UseManager extends Phaser.Graphics {
     constructor(game, level, player) {
