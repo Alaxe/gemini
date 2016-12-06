@@ -73,8 +73,6 @@ class Room extends EventEmitter {
             }
         });
 
-        this.sendRoomUpdate();
-
         ws.on('close', () => {
             room.disconnect(ws);
         });
@@ -83,6 +81,8 @@ class Room extends EventEmitter {
             ws: ws,
             username: msg.username || ''
         });
+
+        this.sendRoomUpdate();
     }
 };
 

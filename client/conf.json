@@ -47,6 +47,12 @@
         "height": 0.1,
         "margin": 4
     },
+    "Error": {
+        "Text": {
+            "fill": "#CC1414"
+        },
+        "timeout": 3000
+    },
     "InputField": {
         "fill": "#222222",
         "borderColor": "#1C67FF",
