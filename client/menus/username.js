@@ -14,11 +14,12 @@ class Username {
             height: 0.1
         });
 
-        this.button = new ui.Button(this.game, 0.3, 0.6, 'Start');
+        this.button = new ui.Button(this.game, 0.3, 0.6, 'Start', 0.4, 0.1, true);
         this.input = new ui.InputField(this.game, 0.3, 0.5, {
             width: 0.4,
             placeHolder: 'Username'
         });
+        console.log(this.input);
 
         this.button.onClick.add(() => {
             this.game.global.username = this.input.getValue();

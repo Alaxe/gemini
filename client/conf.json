@@ -62,7 +62,9 @@
         "font": "20px Roboto",
         "height": 0.05,
         "width": 0.25,
-        "padding": 5
+        "padding": 5,
+        "focusOutOnEnter": false,
+        "blockInput": false
     },
     "Background": {
         "menu": "#eee",

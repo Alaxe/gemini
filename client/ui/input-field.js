@@ -14,6 +14,9 @@ class InputField {
         style.height = utils.vPx(style.height) - 2 * style.padding;
 
         this.inputField = game.add.inputField(xPx, yPx, style);
+
+        this.inputField.blockInput = style.blockInput;
+        this.inputField.focusOutOnEnter = style.focusOutOnEnter;
     }
     getValue() {
         return this.inputField.value;

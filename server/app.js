@@ -48,12 +48,13 @@ function initConnection(ws, msgStr) {
     let msg = JSON.parse(msgStr);
 
     if (msg.type == 'joinRoom') {
-        if (!(msg.gameId in rooms)) {
+        console.log(msg.roomID);
+        if (!(msg.roomId in rooms)) {
             ws.send(JSON.stringify({
                 type: 'joinError',
                 content: 'The specified room doesn\'t exist'
             }));
-        } else if (!(rooms[msg.gameId].canJoin())) {
+        } else if (!(rooms[msg.roomId].canJoin())) {
             ws.send(JSON.stringify({
                 type: 'joinError',
                 content: 'The specified room is full'
@@ -62,7 +63,7 @@ function initConnection(ws, msgStr) {
             ws.removeListener('message', msg => {
                 initConnection(ws, msg);
             });
-            rooms[msg.gameId].addPlayer(ws, msg);
+            rooms[msg.roomId].addPlayer(ws, msg);
         }
     } else if (msg.type == 'createRoom') {
         ws.removeListener('message', initConnection);
@@ -75,6 +76,7 @@ function initConnection(ws, msgStr) {
 
         rooms[id].addPlayer(ws, msg);
     }
+    console.log(rooms);
 }
 
 wss.on('connection', function(ws) {

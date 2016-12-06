@@ -30,7 +30,7 @@ class NetworkManager {
 
     joinRoom(roomId) {
         this.sendOnOpen({
-            type: 'join',
+            type: 'joinRoom',
             roomId: roomId,
             username: this.game.global.username
         });
