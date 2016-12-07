@@ -45,6 +45,7 @@ function generateRoomId() {
 }
 
 function initConnection(ws, msgStr) {
+    //console.log(msgStr);
     let msg = JSON.parse(msgStr);
 
     if (msg.type == 'joinRoom') {
@@ -60,23 +61,23 @@ function initConnection(ws, msgStr) {
                 content: 'The specified room is full'
             }));
         } else {
-            ws.removeListener('message', msg => {
-                initConnection(ws, msg);
-            });
+            ws.removeAllListeners('message');
             rooms[msg.roomId].addPlayer(ws, msg);
         }
     } else if (msg.type == 'createRoom') {
-        ws.removeListener('message', initConnection);
+        ws.removeAllListeners('message');
 
         let id = generateRoomId();
         rooms[id]= new Room(id);
         rooms[id].on('playerLeave', (ws) => {
-            ws.on('message', initConnection);
+            ws.on('message', msg => {
+                initConnection(ws, msg);
+            });
         });
 
         rooms[id].addPlayer(ws, msg);
     }
-    console.log(rooms);
+    //console.log(rooms);
 }
 
 wss.on('connection', function(ws) {

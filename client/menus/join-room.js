@@ -31,17 +31,17 @@ class JoinRoom {
             this.game.state.start('mainMenu');
         });
 
-        let network = this.game.global.network;
+        this.network = this.game.global.network;
+        this.network.clearListeners();
 
         this.join.onClick.add(() => {
-            network.joinRoom(this.idInput.getValue());
+            this.network.joinRoom(this.idInput.getValue().toLowerCase());
         });
 
-        network.onJoinError.add(this.onJoinError, this);
-        network.onRoomUpdate.addOnce((msg) => {
-            network.onJoinError.remove(this.onJoinError, this);
+        this.network.on.joinError.add(this.onJoinError, this);
+        this.network.on.roomUpdate.addOnce((msg) => {
             this.state.start('lobby', true, false, msg);
-        }, this);
+        });
     }
 };
 

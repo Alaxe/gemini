@@ -19,9 +19,14 @@ class MainMenu {
         this.createRoom = new ui.Button(this.game, 0.3, 0.5, 'Create a room');
         this.joinRoom = new ui.Button(this.game, 0.3, 0.6, 'Join a room');
 
+        this.network = this.game.global.network;
+        this.network.clearListeners();
+
         this.createRoom.onClick.add(() => {
-            this.game.state.start('lobby');
-            this.game.global.network.createRoom();
+            this.network.createRoom();
+        });
+        this.network.on.roomUpdate.add(msg => {
+            this.game.state.start('lobby', true, false, msg);
         });
         this.joinRoom.onClick.add(() => {
             this.game.state.start('joinRoom');

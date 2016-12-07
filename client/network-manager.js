@@ -4,27 +4,33 @@ class NetworkManager {
         this.ws = new WebSocket(`ws://${document.location.hostname}:7001`);
 
         //this.onlinePlayers = {};
-        this.onKeyframeUpdate = new Phaser.Signal();
-        this.onTileUpdate = new Phaser.Signal();
-        this.onRoomUpdate = new Phaser.Signal();
-        this.onJoinError = new Phaser.Signal();
+        this.on = {
+            keyframeUpdate: new Phaser.Signal(),
+            tileUpdate: new Phaser.Signal(),
+            roomUpdate: new Phaser.Signal(),
+            startGame: new Phaser.Signal(),
+            joinError: new Phaser.Signal(),
+            lobbyError: new Phaser.Signal()
+        };
 
-        this.onGameStart = new Phaser.Signal();
 
-        this.ws.onmessage = msgStr => {
-            let msg = JSON.parse(msgStr.data);
+        this.ws.onmessage = rawMsg => {
+            let msg = JSON.parse(rawMsg.data);
+            console.log(msg);
 
-            if (msg.type == 'keyframeUpdate') {
-                this.onKeyframeUpdate.dispatch(msg);
-            } else if (msg.type == 'tileUpdate') {
-                this.onTileUpdate.dispatch(msg);
-            } else if (msg.type == 'joinError') {
-                this.onJoinError.dispatch(msg);
-            } else if (msg.type == 'roomUpdate') {
-                this.onRoomUpdate.dispatch(msg);
+            if (msg.type in this.on) {
+                //console.log(this.on, msg.type, this.on[msg.type]);
+                this.on[msg.type].dispatch(msg);
             } else {
                 console.log('Received unknown message', msg);
             }
+        }
+    }
+
+    clearListeners() {
+        console.log(this.on);
+        for (let id in this.on) {
+            this.on[id].removeAll();
         }
     }
 
@@ -33,6 +39,18 @@ class NetworkManager {
             type: 'joinRoom',
             roomId: roomId,
             username: this.game.global.username
+        });
+    }
+
+    leaveRoom() {
+        this.send({
+            type: 'leaveRoom'
+        });
+    }
+
+    startGame() {
+        this.send({
+            type: 'startGame'
         });
     }
 

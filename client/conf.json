@@ -3,6 +3,7 @@
     "GAME_H": 500,
     "GRAVITY": 0,
     "CAMERA_INTERPOLATION": 0.1,
+    "PLAYER_COUNT": 2,
     "Player": {
         "GRAVITY": 1600,
         "MAX_VELOCITY": {
@@ -32,7 +33,8 @@
         "fill": "#222",
         "wordWrap": true,
         "wordWrapWidth": 1000000,
-        "boundsAlignH": "center"
+        "boundsAlignH": "center",
+        "align": "center"
     },
     "Button": {
         "Text": {

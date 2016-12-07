@@ -6,10 +6,9 @@ const Player = require('./player.js');
 const LocalPlayer = require('./local-player.js');
 const OnlinePlayerManager = require('./online-player-manager.js');
 
-const NetworkManager = require('../network-manager.js');
+//const NetworkManager = require('../network-manager.js');
 const Level = require('./level.js');
 const UseManager = require('./use-highlight.js');
-
 
 class PlayState {
     constructor() {}
@@ -32,22 +31,22 @@ class PlayState {
         this.camera.follow(this.player, Phaser.Camera.FOLLOW_LOCKON,
             conf.CAMERA_INTERPOLATION, conf.CAMERA_INTERPOLATION);
 
-        this.network = new NetworkManager(this.game);
+        this.network = this.game.global.network;
+        this.network.clearListeners();
 
         this.useManager = new UseManager(this.game, this.level,
                 this.player);
 
-        this.level.onTileChange.add(this.network.sendTileUpdate
-                .bind(this.network));
+        this.level.onTileChange.add(this.network.sendTileUpdate, this.network);
 
         this.onlinePlayerManager = new OnlinePlayerManager(this.game);
-        this.network.onKeyframeUpdate.add(this
+        this.network.on.keyframeUpdate.add(this
             .onlinePlayerManager
             .handleKeyframeUpdate
             .bind(this.onlinePlayerManager));
 
-        this.network.onTileUpdate.add(this.level.onTileUpdate.bind(this.level));
-        this.network.onTileUpdate.add(console.log);
+        this.network.on.tileUpdate.add(this.level.onTileUpdate.bind(this.level));
+        this.network.on.tileUpdate.add(console.log);
         this.restart = this.input.keyboard.addKey(Phaser.Keyboard.R);
 
         this.stage.backgroundColor = conf.Background.play;
