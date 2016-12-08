@@ -5,8 +5,8 @@ const Player = require('./player.js');
 let onlinePlayersById = {}
 
 class OnlinePlayer extends Player {
-    constructor(game) {
-        super(game);
+    constructor(game, username) {
+        super(game, username);
         this.keyframes = [];
 
         this.meanTimeDiff = 0;
@@ -49,11 +49,18 @@ class OnlinePlayer extends Player {
 
             this.x = prev.x + (next.x - prev.x) * traversedPart;
             this.y = prev.y + (next.y - prev.y) * traversedPart;
+            if (next.x < this.x) {
+                this.setLookDirection(-1);
+            } else if (next.x > this.x) {
+                this.setLookDirection(1);
+            }
         } else {
             //console.log('Not enough keyframes');
             this.x = prev.x;
             this.y = prev.y;
         }
+
+        super.update();
     }
 }
 

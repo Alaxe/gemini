@@ -7,15 +7,16 @@ class OnlinePlayerManager {
         this.playersById = {}
     }
 
-    getPlayerById(id) {
+    getKeyframePlayer(msg) {
+        let id = msg.id;
         if (!(id in this.playersById)) {
-            this.playersById[id] = new OnlinePlayer(this.game);
+            this.playersById[id] = new OnlinePlayer(this.game, msg.username);
         }
         return this.playersById[id];
     }
 
     handleKeyframeUpdate(msg) {
-        let player = this.getPlayerById(msg.playerId);
+        let player = this.getKeyframePlayer(msg);
         player.addKeyframe(msg);
     }
 }

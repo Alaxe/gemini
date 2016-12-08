@@ -4,7 +4,7 @@ const Player = require('./player.js');
 
 class LocalPlayer extends Player {
     constructor(game, x = 0, y = 0) {
-        super(game, x, y);
+        super(game, 'you', x, y);
 
         this.game.physics.enable(this, Phaser.Physics.ARCADE);
 
@@ -54,9 +54,9 @@ class LocalPlayer extends Player {
         }
 
         if (this.body.velocity.x < 0) {
-            this.scale.setTo(-1, 1);
+            this.setLookDirection(-1);
         } else if (this.body.velocity.x > 0) {
-            this.scale.setTo(1, 1);
+            this.setLookDirection(1);
         }
 
         if (!(this.body.onFloor()) || (this.body.velocity.x != 0)) {

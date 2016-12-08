@@ -93,7 +93,8 @@ class NetworkManager {
                 type: 'keyframeUpdate',
                 x: player.x,
                 y: player.y,
-                time: this.game.time.now
+                time: this.game.time.now,
+                username: this.game.global.username
             }
         });
     }
