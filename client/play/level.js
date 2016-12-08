@@ -105,8 +105,16 @@ class Level {
 
         console.log(conf.Level.COLLISION_TILE_ID);
         this.map.setCollision(conf.Level.COLLISION_TILE_ID, true, 'platforms');
-        this.buildNetwork();
 
+        this.map.setTileIndexCallback(conf.Level.EXIT_BLOCK_ID,
+        (sprite, tile) => {
+            if (sprite.onExitBlockCollide) {
+                sprite.onExitBlockCollide.dispatch(tile);
+            }
+            return true;
+        }, this, 'platforms');
+
+        this.buildNetwork();
         this.simulatePower();
     }
 

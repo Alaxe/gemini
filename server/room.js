@@ -21,8 +21,16 @@ class Room extends EventEmitter {
                 return i;
             }
         }
-        console.log('not found');
         return null;
+    }
+
+    allExitReady() {
+        for (let player of this.players) {
+            if (!player.exitReady) {
+                return false;
+            }
+        }
+        return true
     }
 
     broadcast(ws, receivedMsg) {
@@ -37,6 +45,12 @@ class Room extends EventEmitter {
                 //console.log('Sending broadcast');
                 player.ws.send(msgStr);
             }
+        }
+    }
+    sendAll(msg) {
+        let msgStr = JSON.stringify(msg);
+        for (let player of this.players) {
+            player.ws.send(msgStr);
         }
     }
 
@@ -65,9 +79,19 @@ class Room extends EventEmitter {
             }));
         } else {
             let msgStr = JSON.stringify({type: 'startGame'});
+            this.playing = true;
             for (let player of this.players) {
+                player.exitReady = false;
                 player.ws.send(msgStr);
             }
+        }
+    }
+
+    onExitReadyChange(ws, msg) {
+        this.players[this.indexOfWS(ws)].exitReady = msg.ready;
+        if (this.allExitReady()) {
+            this.playing = false;
+            this.sendRoomUpdate();
         }
     }
 
@@ -81,13 +105,7 @@ class Room extends EventEmitter {
         for (let player of this.players) {
             msg.players.push(player.username);
         }
-
-        let msgStr = JSON.stringify(msg);
-        //console.log(msgStr);
-
-        for (let player of this.players) {
-            player.ws.send(msgStr);
-        }
+        this.sendAll(msg);
     }
 
     addPlayer(ws, msg) {
@@ -103,6 +121,8 @@ class Room extends EventEmitter {
             } else if (msg.type == 'leaveRoom') {
                 this.leaveRoom(ws);
                 this.emit('playerLeave', ws);
+            } else if (msg.type == 'exitReady') {
+                this.onExitReadyChange(ws, msg);
             } else {
                 throw new Error({
                     type: 'invalid message',
@@ -118,7 +138,8 @@ class Room extends EventEmitter {
 
         this.players.push({
             ws: ws,
-            username: msg.username || ''
+            username: msg.username || '',
+            exitReady: false
         });
 
         console.log('sending player update');

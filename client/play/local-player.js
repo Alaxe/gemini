@@ -18,6 +18,19 @@ class LocalPlayer extends Player {
 
         this.cursors = this.game.input.keyboard.createCursorKeys();
         this.jump = this.game.input.keyboard.addKey(Phaser.KeyCode.SPACEBAR);
+
+        this.onExitBlockCollide = new Phaser.Signal();
+        this.onExitBlockCollide.add(tile => {
+            //console.log(this.y, tile);
+            if (tile.worldY > this.y) {
+                this.onExitBlock = true;
+            }
+        });
+
+        this.onExitReady = new Phaser.Signal();
+
+        this.onExitBlock = false;
+        this.prevOnExitBlock = false;
     }
 
     update() {
@@ -45,6 +58,17 @@ class LocalPlayer extends Player {
         } else if (this.body.velocity.x > 0) {
             this.scale.setTo(1, 1);
         }
+
+        if (!(this.body.onFloor()) || (this.body.velocity.x != 0)) {
+            this.onExitBlock = false;
+        }
+
+        if (this.onExitBlock != this.prevOnExitBlock) {
+            this.onExitReady.dispatch(this.onExitBlock);
+        }
+
+        this.prevOnExitBlock = this.onExitBlock;
+        this.onExitBlock = false;
     }
 }
 

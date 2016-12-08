@@ -27,12 +27,14 @@ class PlayState {
 
         this.level = new Level(this.game);
 
+        this.network = this.game.global.network;
+        this.network.clearListeners();
+
         this.player = new LocalPlayer(this.game);
         this.camera.follow(this.player, Phaser.Camera.FOLLOW_LOCKON,
             conf.CAMERA_INTERPOLATION, conf.CAMERA_INTERPOLATION);
 
-        this.network = this.game.global.network;
-        this.network.clearListeners();
+        this.player.onExitReady.add(this.network.sendExitReady, this.network);
 
         this.useManager = new UseManager(this.game, this.level,
                 this.player);
@@ -42,11 +44,14 @@ class PlayState {
         this.onlinePlayerManager = new OnlinePlayerManager(this.game);
         this.network.on.keyframeUpdate.add(this
             .onlinePlayerManager
-            .handleKeyframeUpdate
-            .bind(this.onlinePlayerManager));
+            .handleKeyframeUpdate,
+            this.onlinePlayerManager);
 
-        this.network.on.tileUpdate.add(this.level.onTileUpdate.bind(this.level));
+        this.network.on.tileUpdate.add(this.level.onTileUpdate, this.level);
         this.network.on.tileUpdate.add(console.log);
+        this.network.on.roomUpdate.add(msg => {
+            this.game.state.start('levelEnd', true, false, msg);
+        }, this);
         this.restart = this.input.keyboard.addKey(Phaser.Keyboard.R);
 
         this.stage.backgroundColor = conf.Background.play;

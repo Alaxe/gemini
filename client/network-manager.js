@@ -10,13 +10,14 @@ class NetworkManager {
             roomUpdate: new Phaser.Signal(),
             startGame: new Phaser.Signal(),
             joinError: new Phaser.Signal(),
-            lobbyError: new Phaser.Signal()
+            lobbyError: new Phaser.Signal(),
+            levelFinish: new Phaser.Signal()
         };
 
 
         this.ws.onmessage = rawMsg => {
             let msg = JSON.parse(rawMsg.data);
-            console.log(msg);
+            //console.log(msg);
 
             if (msg.type in this.on) {
                 //console.log(this.on, msg.type, this.on[msg.type]);
@@ -28,7 +29,7 @@ class NetworkManager {
     }
 
     clearListeners() {
-        console.log(this.on);
+        //console.log(this.on);
         for (let id in this.on) {
             this.on[id].removeAll();
         }
@@ -41,7 +42,6 @@ class NetworkManager {
             username: this.game.global.username
         });
     }
-
     leaveRoom() {
         this.send({
             type: 'leaveRoom'
@@ -58,6 +58,14 @@ class NetworkManager {
         this.sendOnOpen({
             type: 'createRoom',
             username: this.game.global.username
+        });
+    }
+
+    sendExitReady(ready = true) {
+        console.log('Ready: ', ready);
+        this.send({
+            type: 'exitReady',
+            ready: ready
         });
     }
 

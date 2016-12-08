@@ -28,11 +28,12 @@
         "color": 0xFFFFFF
     },
     "Level": {
-        "COLLISION_TILE_ID": [19, 21],
+        "COLLISION_TILE_ID": [19, 21, 22],
         "Hologram": {
             "ON": 21,
             "OFF": 20
-        }
+        },
+        "EXIT_BLOCK_ID": 22
     },
     "fonts": ["Roboto"],
     "Text": {
