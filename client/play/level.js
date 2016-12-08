@@ -1,4 +1,5 @@
 'use strict';
+const conf = require('../conf.json');
 function rotateMask(mask, rotationRad) {
     let rotCnt = Math.round(rotationRad / Math.PI * 2);
     let firstMask = mask;
@@ -43,8 +44,6 @@ class CableComponent {
 
         this.inputsLeft = 0;
         this.hasInput = false;
-
-        //this.map = startTile.layer.map;
     }
 
     setPower(power) {
@@ -104,7 +103,8 @@ class Level {
         this.platformLayer = this.map.createLayer('platforms');
         this.platformLayer.resizeWorld();
 
-        this.map.setCollision(19, true, 'platforms');
+        console.log(conf.Level.COLLISION_TILE_ID);
+        this.map.setCollision(conf.Level.COLLISION_TILE_ID, true, 'platforms');
         this.buildNetwork();
 
         this.simulatePower();
@@ -127,10 +127,8 @@ class Level {
     }
 
     onUseTile(tile) {
-        console.log('using ', tile);
         if (this.constructor.useTile(tile)) {
             this.simulatePower();
-            console.log(tile);
             this.onTileChange.dispatch(tile);
         }
     }
@@ -189,6 +187,7 @@ class Level {
             }
         }
     }
+
     getLogicBlock(tile) {
         if (tile.properties.type !== 'logic') {
             throw new Error(tile);
@@ -293,6 +292,27 @@ class Level {
         }
     }
 
+    findHolograms() {
+        this.holograms = [];
+
+        for (let x = 0;x < this.map.width;x++) {
+            for (let y = 0;y < this.map.height;y++) {
+                let tile = this.map.getTile(x, y, 'platforms');
+                if ((tile != null) && ((tile.index == conf.Level.Hologram.ON) ||
+                        (tile.index == conf.Level.Hologram.OFF))) {
+                    let cableTile = this.map.getTile(x, y, 'cables');
+
+                    tile.properties.component = cableTile !== null
+                        ? cableTile.properties.component
+                        : null;
+                    this.holograms.push(tile);
+                }
+            }
+        }
+
+        console.log('holograms', this.holograms);
+    }
+
     buildNetwork() {
         this.rotateTileEnds();
         this.initNetwork();
@@ -311,6 +331,7 @@ class Level {
             }
         }
 
+        this.findHolograms();
         this.connectLogicBlocks();
     }
 
@@ -339,7 +360,6 @@ class Level {
                 block.calcOutput();
 
                 block.outCC.hasInput = block.outCC.hasInput || block.hasOutput;
-                //console.log(block.hasOutput, block.outCC.hasInput);
                 block.outCC.inputsLeft--;
 
                 if (block.outCC.inputsLeft == 0) {
@@ -349,6 +369,24 @@ class Level {
         }
 
         this.cableLayer.dirty = true;
+
+        this.powerHolograms();
     }
+
+    powerHolograms() {
+        for (let hologram of this.holograms) {
+            let hasPower = hologram.properties.component
+                ? hologram.properties.component.hasInput
+                : false;
+
+            hologram.index = hasPower
+                ? conf.Level.Hologram.ON
+                : conf.Level.Hologram.OFF;
+            this.map.putTile(hologram, hologram.x, hologram.y, 'platforms');
+        }
+        console.log(this.holograms);
+        this.platformLayer.dirty = true;
+    }
+
 }
 module.exports = Level;

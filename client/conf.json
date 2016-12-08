@@ -27,6 +27,13 @@
         },
         "color": 0xFFFFFF
     },
+    "Level": {
+        "COLLISION_TILE_ID": [19, 21],
+        "Hologram": {
+            "ON": 21,
+            "OFF": 20
+        }
+    },
     "fonts": ["Roboto"],
     "Text": {
         "font": "25px Roboto",

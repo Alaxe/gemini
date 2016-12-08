@@ -15,9 +15,6 @@ game.global = {
     network: new NetworkManager(game)
 };
 
-//game.global.network.onRoomUpdate.add(console.log);
-//game.global.network.onJoinError.add(console.log);
-
 game.state.add('play', new PlayState());
 game.state.add('mainMenu', new MainMenu());
 game.state.add('username', new Username());
@@ -25,4 +22,3 @@ game.state.add('lobby', new Lobby());
 game.state.add('joinRoom', new JoinRoom());
 
 game.state.start('username');
-//game.state.start('joinRoom');
