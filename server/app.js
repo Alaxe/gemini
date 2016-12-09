@@ -16,9 +16,6 @@ app.use('/assets', express.static(path.join(__dirname, '../assets')));
 
 
 app.get('/', function(req, res) {
-    res.redirect('/play/');
-});
-app.get('/play/', function(req, res) {
     res.sendFile(path.join(__dirname, '../static/index.html'));
 });
 
@@ -45,11 +42,9 @@ function generateRoomId() {
 }
 
 function initConnection(ws, msgStr) {
-    //console.log(msgStr);
     let msg = JSON.parse(msgStr);
 
     if (msg.type == 'joinRoom') {
-        console.log(msg.roomID);
         if (!(msg.roomId in rooms)) {
             ws.send(JSON.stringify({
                 type: 'joinError',
@@ -77,7 +72,6 @@ function initConnection(ws, msgStr) {
 
         rooms[id].addPlayer(ws, msg);
     }
-    //console.log(rooms);
 }
 
 wss.on('connection', function(ws) {

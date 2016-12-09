@@ -18,7 +18,6 @@ class Player extends Phaser.Sprite {
 
         this.anchor.setTo(0.5, 0.5);
         this.game.add.existing(this);
-        //console.log(this.left);
     }
     setLookDirection(xDirection) {
         this.scale.setTo(xDirection, 1);

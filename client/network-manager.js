@@ -3,7 +3,6 @@ class NetworkManager {
         this.game = game;
         this.ws = new WebSocket(`ws://${document.location.hostname}:7001`);
 
-        //this.onlinePlayers = {};
         this.on = {
             diamondPickup: new Phaser.Signal(),
             keyframeUpdate: new Phaser.Signal(),
@@ -15,13 +14,10 @@ class NetworkManager {
             levelFinish: new Phaser.Signal()
         };
 
-
         this.ws.onmessage = rawMsg => {
             let msg = JSON.parse(rawMsg.data);
-            //console.log(msg);
 
             if (msg.type in this.on) {
-                //console.log(this.on, msg.type, this.on[msg.type]);
                 this.on[msg.type].dispatch(msg);
             } else {
                 console.log('Received unknown message', msg);
@@ -69,7 +65,6 @@ class NetworkManager {
     }
 
     sendExitReady(ready = true) {
-        console.log('Ready: ', ready);
         this.send({
             type: 'exitReady',
             ready: ready
@@ -86,7 +81,6 @@ class NetworkManager {
     }
 
     sendTileUpdate(tile) {
-        console.log(tile, tile.id);
         this.send({
             type: 'broadcast',
             body: {

@@ -3,7 +3,6 @@ const conf = require('../conf.json').Highlight;
 
 class UseManager extends Phaser.Graphics {
     constructor(game, level, player) {
-        console.log('bollocks');
         super(game, 0, 0);
 
         super.lineStyle(2, conf.color, 1);
@@ -26,8 +25,6 @@ class UseManager extends Phaser.Graphics {
                 this.onUse.dispatch(this.tile);
             }
         });
-        this.useButton.onDown.add(console.log);
-
     }
 
     update() {

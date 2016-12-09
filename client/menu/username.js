@@ -17,7 +17,6 @@ class Username {
             width: 0.4,
             placeHolder: 'Username'
         });
-        console.log(this.input);
 
         this.button.onClick.add(() => {
             this.game.global.username = this.input.getValue();

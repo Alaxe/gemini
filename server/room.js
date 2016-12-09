@@ -39,11 +39,9 @@ class Room extends EventEmitter {
         msg.playerId = this.indexOfWS(ws);
 
         let msgStr = JSON.stringify(msg);
-        //console.log('broadcast', msgStr);
 
         for (let player of this.players) {
             if (player.ws !== ws) {
-                //console.log('Sending broadcast');
                 player.ws.send(msgStr);
             }
         }
@@ -56,10 +54,7 @@ class Room extends EventEmitter {
     }
 
     leaveRoom(ws) {
-        console.log(this.players);
-        console.log(this.indexOfWS(ws));
         this.players.splice(this.indexOfWS(ws), 1);
-        console.log(this.players);
         if (!this.playing) {
             this.sendRoomUpdate();
         }
@@ -120,7 +115,6 @@ class Room extends EventEmitter {
     }
 
     addPlayer(ws, msg) {
-        //console.log('addingPlayer)');
 
         ws.on('message', msgStr => {
             let msg = JSON.parse(msgStr);
@@ -155,7 +149,6 @@ class Room extends EventEmitter {
             exitReady: false
         });
 
-        console.log('sending player update');
         this.sendRoomUpdate();
     }
 };

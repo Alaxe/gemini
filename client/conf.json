@@ -114,7 +114,8 @@
         "width": 0.25,
         "padding": 5,
         "focusOutOnEnter": false,
-        "blockInput": false
+        "blockInput": false,
+        "max": 12
     },
     "Background": {
         "menu": "#eee",

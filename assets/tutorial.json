@@ -55,18 +55,6 @@
                 {
                  "gid":23,
                  "height":32,
-                 "id":19,
-                 "name":"",
-                 "rotation":0,
-                 "type":"diamond",
-                 "visible":true,
-                 "width":32,
-                 "x":61.3333333333333,
-                 "y":444
-                }, 
-                {
-                 "gid":23,
-                 "height":32,
                  "id":21,
                  "name":"",
                  "rotation":0,

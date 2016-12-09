@@ -21,7 +21,6 @@ class LocalPlayer extends Player {
 
         this.onExitBlockCollide = new Phaser.Signal();
         this.onExitBlockCollide.add(tile => {
-            //console.log(this.y, tile);
             if (tile.worldY > this.y) {
                 this.onExitBlock = true;
             }

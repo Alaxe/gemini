@@ -9,7 +9,7 @@ class LevelSelect {
         this.roomData = roomData;
     }
     create() {
-        let previews = [];
+        this.title = new ui.Text(this.game, 0, 0.1, 'Select a level', 1, 0.1);
 
         let width = conf.LevelPreview.width * conf.LevelSelect.hCnt;
         let height = conf.LevelPreview.height * conf.LevelSelect.vCnt;

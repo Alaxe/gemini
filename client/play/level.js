@@ -51,7 +51,6 @@ class CableComponent {
     }
 
     setPower(power) {
-        //console.log(this.tiles, power);
         for (let tile of this.tiles) {
             let baseIndex = tile.index;
             if ((tile.index & 1) == 0) {
@@ -61,9 +60,6 @@ class CableComponent {
             tile.index = power
                 ? baseIndex + 1
                 : baseIndex;
-            //tile.id++;
-            //this.map.putTile(tile, tile.x, tile.y, tile.layer.name);
-            //console.log(tile.layer.name);
         }
     }
 
@@ -389,8 +385,6 @@ class Level {
         while (queue.length > 0) {
             let cur = queue[0];
             queue.shift();
-
-            //console.log(cur);
 
             cur.setPower(cur.hasInput);
 

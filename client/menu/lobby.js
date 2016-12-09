@@ -33,7 +33,6 @@ class Lobby {
         this.network.clearListeners();
 
         this.network.on.roomUpdate.add(msg => {
-            //console.log('received msg', msg);
             this.data = msg;
             this.updateData();
         }, this);

@@ -55,7 +55,6 @@ class OnlinePlayer extends Player {
                 this.setLookDirection(1);
             }
         } else {
-            //console.log('Not enough keyframes');
             this.x = prev.x;
             this.y = prev.y;
         }
