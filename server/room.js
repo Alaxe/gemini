@@ -7,6 +7,7 @@ class Room extends EventEmitter {
         super();
 
         this.id = id;
+        this.levelIndex = 0;
         this.players = [];
         this.playing = false;
     }
@@ -78,7 +79,11 @@ class Room extends EventEmitter {
                 content: 'Already playing'
             }));
         } else {
-            let msgStr = JSON.stringify({type: 'startGame'});
+            let msgStr = JSON.stringify({
+                type: 'startGame',
+                levelIndex: this.levelIndex
+            });
+
             this.playing = true;
             for (let player of this.players) {
                 player.exitReady = false;
@@ -95,11 +100,17 @@ class Room extends EventEmitter {
         }
     }
 
+    onLevelSelect(ws, msg) {
+        this.levelIndex = msg.levelIndex;
+        this.sendRoomUpdate();
+    }
+
     sendRoomUpdate() {
         let msg = {
             type: 'roomUpdate',
             roomId: this.id,
-            players: []
+            players: [],
+            levelIndex: this.levelIndex
         };
 
         for (let player of this.players) {
@@ -123,6 +134,8 @@ class Room extends EventEmitter {
                 this.emit('playerLeave', ws);
             } else if (msg.type == 'exitReady') {
                 this.onExitReadyChange(ws, msg);
+            } else if (msg.type == 'levelSelect') {
+                this.onLevelSelect(ws, msg);
             } else {
                 throw new Error({
                     type: 'invalid message',

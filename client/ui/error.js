@@ -2,9 +2,9 @@ const conf = require('../conf.json');
 const Text  = require('./text.js');
 
 class Error extends Text {
-    constructor(game, x, y, options) {
+    constructor(game, x, y, width, height, options) {
         let style = Object.assign({}, conf.Error.Text, options);
-        super(game, x, y, '', style);
+        super(game, x, y, '', width, height, style);
 
         this.textClearTimer = null;
     }

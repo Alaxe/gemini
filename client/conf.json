@@ -22,6 +22,10 @@
             "heightPx": 32
         }
     },
+    "LevelSelect": {
+        "hCnt": 5,
+        "vCnt": 4
+    },
     "DiamondCounter": {
         "margin": 10,
         "textWidth": 1,
@@ -32,6 +36,19 @@
             "font": "20px Roboto",
             "fill": "#FFFFFF"
         }
+    },
+    "LevelPreview": {
+        "Button": {
+            "Text": {
+                "font": "20px Roboto",
+                "fill": "#FFFFFF",
+                "boundsAlignV": "middle"
+            },
+            "fill": 0x435668,
+            "hover": 0x2D3A47
+        },
+        "width": 0.15,
+        "height": 0.15
     },
     "Highlight": {
         "Y": {
@@ -81,7 +98,8 @@
     },
     "Error": {
         "Text": {
-            "fill": "#CC1414"
+            "fill": "#CC1414",
+            "boundsAlignH": "center"
         },
         "timeout": 3000
     },

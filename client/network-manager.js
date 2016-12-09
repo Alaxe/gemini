@@ -35,6 +35,13 @@ class NetworkManager {
         }
     }
 
+    selectLevel(levelInd) {
+        this.send({
+            type: 'levelSelect',
+            levelIndex: levelInd
+        });
+    }
+
     joinRoom(roomId) {
         this.sendOnOpen({
             type: 'joinRoom',

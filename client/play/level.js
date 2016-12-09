@@ -1,6 +1,9 @@
 'use strict';
 const conf = require('../conf.json');
+const levelData = require('../level-data.json');
+
 const ui = require('../ui');
+
 function rotateMask(mask, rotationRad) {
     let rotCnt = Math.round(rotationRad / Math.PI * 2);
     let firstMask = mask;
@@ -89,12 +92,12 @@ class CableComponent {
 }
 
 class Level {
-    constructor(game) {
+    constructor(game, levelIndex) {
         this.onTileChange = new Phaser.Signal();
 
         this.game = game;
 
-        this.map = this.game.add.tilemap('map');
+        this.map = this.game.add.tilemap('map-' + levelIndex);
         this.map.addTilesetImage('platforms');
         this.map.addTilesetImage('cables');
 
@@ -105,11 +108,7 @@ class Level {
         this.platformLayer.resizeWorld();
 
         this.diamonds = this.game.add.group();
-        //this.map.createFromObjects('objects', conf.Level.DIAMOND_ID, 'diamond',
-                //0, true, false, this.diamonds);
-
         this.helpTexts = this.game.add.group();
-        console.log(this.map.objects.objects);
 
         let diamondCnt = 0;
         for (let object of this.map.objects.objects) {
@@ -136,7 +135,6 @@ class Level {
         this.buildNetwork();
         this.simulatePower();
 
-        console.log(conf.Level.COLLISION_TILE_ID);
         this.map.setCollision(conf.Level.COLLISION_TILE_ID, true, 'platforms');
 
         this.map.setTileIndexCallback(conf.Level.EXIT_BLOCK_ID,
@@ -149,18 +147,21 @@ class Level {
 
     }
 
+    static loadTilemap(game, levelIndex) {
+        let mapPath = levelData[levelIndex].path;
+        game.load.tilemap('map-' + levelIndex, mapPath, null, 
+                Phaser.Tilemap.TILED_JSON);
+    }
 
     static useTile(tile) {
         if ((tile == null) || (!tile.properties.usable)) {
             return false;
         } else {
             let oldIndex = tile.index;
-            console.log(tile);
 
             tile.index = tile.properties.onUseId;
             tile.properties.onUseId = oldIndex;
 
-            console.log(tile);
 
             return true;
         }
@@ -349,8 +350,6 @@ class Level {
                 }
             }
         }
-
-        console.log('holograms', this.holograms);
     }
 
     buildNetwork() {
@@ -424,7 +423,6 @@ class Level {
                 : conf.Level.Hologram.OFF;
             this.map.putTile(hologram, hologram.x, hologram.y, 'platforms');
         }
-        console.log(this.holograms);
         this.platformLayer.dirty = true;
     }
 

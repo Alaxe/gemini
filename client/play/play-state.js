@@ -1,6 +1,7 @@
 'use strict';
 
 const conf = require('../conf.json');
+const levelData = require('../level-data.json');
 const ui = require('../ui');
 
 const Player = require('./player.js');
@@ -14,13 +15,15 @@ const UseManager = require('./use-highlight.js');
 class PlayState {
     constructor() {}
 
+    init(levelIndex) {
+        this.levelIndex = levelIndex;
+    }
     preload() {
         this.load.image('platforms', '../assets/platforms.png')
         this.load.image('cables', '../assets/cables.png')
         this.load.image('diamond', '../assets/diamond.png');
 
-        this.load.tilemap('map', '../assets/level.json', null,
-            Phaser.Tilemap.TILED_JSON);
+        Level.loadTilemap(this.game, this.levelIndex);
 
         this.load.image('player', '../assets/player.png');
     }
@@ -34,7 +37,7 @@ class PlayState {
         this.physics.startSystem(Phaser.Physics.ARCADE);
         this.physics.arcade.gravity.y = conf.GRAVITY;
 
-        this.level = new Level(this.game);
+        this.level = new Level(this.game, this.levelIndex);
 
         this.network = this.game.global.network;
 
@@ -61,11 +64,12 @@ class PlayState {
             this.onlinePlayerManager);
 
         this.network.on.tileUpdate.add(this.level.onTileUpdate, this.level);
-        this.network.on.tileUpdate.add(console.log);
 
         this.network.on.roomUpdate.add(msg => {
-            this.game.state.start('levelEnd', true, false, msg,
-                    this.diamondCounter.count);
+            this.game.state.start('levelEnd', true, false, msg, {
+                collected: this.diamondCounter.count,
+                all: levelData[this.levelIndex].diamondCount
+            });
         });
         this.network.on.diamondPickup.add(msg => {
             this.level.diamonds.getAt(msg.id).kill();

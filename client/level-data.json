@@ -1,0 +1,9 @@
+[{
+    "title": "Test",
+    "path": "../assets/level.json",
+    "diamondCount": 3
+}, {
+    "title": "Tutorial",
+    "path": "../assets/tutorial.json",
+    "diamondCount": 3
+}]
