@@ -149,7 +149,7 @@ class Level {
 
     static loadTilemap(game, levelIndex) {
         let mapPath = levelData[levelIndex].path;
-        game.load.tilemap('map-' + levelIndex, mapPath, null, 
+        game.load.tilemap('map-' + levelIndex, mapPath, null,
                 Phaser.Tilemap.TILED_JSON);
     }
 

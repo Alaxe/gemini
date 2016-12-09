@@ -72,8 +72,11 @@ class PlayState {
             });
         });
         this.network.on.diamondPickup.add(msg => {
-            this.level.diamonds.getAt(msg.id).kill();
-            this.diamondCounter.increment();
+            let diamond = this.level.diamonds.getAt(msg.id);
+            if (diamond.exists) {
+                diamond.kill();
+                this.diamondCounter.increment();
+            }
         }, this);
     }
 

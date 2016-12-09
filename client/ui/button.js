@@ -4,8 +4,8 @@ const util = require('./util.js');
 const Text = require('./text.js');
 
 class Button extends Phaser.Group {
-    constructor(game, x, y, labelText, width, height, enterActivate = false, 
-            options) 
+    constructor(game, x, y, labelText, width, height, enterActivate = false,
+            options)
     {
         super(game);
 

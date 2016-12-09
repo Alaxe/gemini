@@ -12,7 +12,7 @@ class LevelEnd {
         this.congratulation = new ui.Text(this.game, 0.3, 0.4, 'Level passed',
                 0.4, 0.1);
 
-        let diamondText = this.diamonds.collected + '/' + this.diamonds.all 
+        let diamondText = this.diamonds.collected + '/' + this.diamonds.all
                 + ' diamonds';
         this.diamonds = new ui.Text(this.game, 0.3, 0.5, diamondText, 0.4, 0.1);
 

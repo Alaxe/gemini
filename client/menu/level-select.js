@@ -6,7 +6,7 @@ const levelData = require('../level-data.json');
 class LevelSelect {
     constructor() {}
     init(roomData) {
-        this.roomData = roomData; 
+        this.roomData = roomData;
     }
     create() {
         let previews = [];
