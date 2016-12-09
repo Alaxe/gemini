@@ -229,7 +229,7 @@
         {
          "columns":2,
          "firstgid":1,
-         "image":"cables.png",
+         "image":"..\/sprites\/cables.png",
          "imageheight":288,
          "imagewidth":64,
          "margin":0,
@@ -464,7 +464,7 @@
         {
          "columns":1,
          "firstgid":19,
-         "image":"platforms.png",
+         "image":"..\/sprites\/platforms.png",
          "imageheight":128,
          "imagewidth":32,
          "margin":0,
@@ -491,7 +491,7 @@
         {
          "columns":1,
          "firstgid":23,
-         "image":"diamond.png",
+         "image":"..\/sprites\/diamond.png",
          "imageheight":32,
          "imagewidth":32,
          "margin":0,

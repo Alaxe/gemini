@@ -8,7 +8,6 @@ const Player = require('./player.js');
 const LocalPlayer = require('./local-player.js');
 const OnlinePlayerManager = require('./online-player-manager.js');
 
-//const NetworkManager = require('../network-manager.js');
 const Level = require('./level.js');
 const UseManager = require('./use-highlight.js');
 
@@ -19,13 +18,13 @@ class PlayState {
         this.levelIndex = levelIndex;
     }
     preload() {
-        this.load.image('platforms', '../assets/platforms.png')
-        this.load.image('cables', '../assets/cables.png')
-        this.load.image('diamond', '../assets/diamond.png');
+        this.load.image('platforms', '../assets/sprites/platforms.png')
+        this.load.image('cables', '../assets/sprites/cables.png')
+        this.load.image('diamond', '../assets/sprites/diamond.png');
 
         Level.loadTilemap(this.game, this.levelIndex);
 
-        this.load.image('player', '../assets/player.png');
+        this.load.image('player', '../assets/sprites/player.png');
     }
     create() {
         this.createObjects();

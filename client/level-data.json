@@ -1,9 +1,9 @@
 [{
-    "title": "Test",
-    "path": "../assets/level.json",
-    "diamondCount": 3
-}, {
     "title": "Tutorial",
-    "path": "../assets/tutorial.json",
-    "diamondCount": 3
+    "path": "../assets/levels/tutorial.json",
+    "diamondCount": 6
+}, {
+    "title": "Level 1",
+    "path": "../assets/levels/level1.json",
+    "diamondCount": 6
 }]
