@@ -4,7 +4,7 @@ const util = require('./util.js');
 const Text = require('./text.js');
 
 class Button extends Phaser.Group {
-    constructor(game, x, y, label, width, height, enterActivate = false) {
+    constructor(game, x, y, labelText, width, height, enterActivate = false) {
         super(game);
 
         this.x = util.hPx(x);
@@ -44,15 +44,13 @@ class Button extends Phaser.Group {
 
         this.add(this.bg);
 
-        let textStyle = Object.assign({},
-            conf.Text, {
-                width: width - util.hPart(conf.margin),
-                height: height - util.vPart(conf.margin)
-            }
-        );
+        let labelStyle = Object.assign({}, conf.Text);
 
-        this.text = new Text(game, 0, 0, label, textStyle);
-        this.add(this.text);
+        let labelW = width - util.hPart(conf.margin);
+        let labelH = height - util.vPart(conf.margin);
+
+        this.label = new Text(game, 0, 0, labelText, labelW, labelH, labelStyle);
+        this.add(this.label);
 
         if (enterActivate) {
             let key = game.input.keyboard.addKey(Phaser.KeyCode.ENTER);

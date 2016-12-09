@@ -7,15 +7,11 @@ class Lobby {
         this.pendingUpdate = roomData;
     }
     createUIElements() {
-        this.gameCode = new ui.Text(this.game, 0.3, 0.25, '', {
-            width: 0.4, height: 0.15
-        });
+        this.gameCode = new ui.Text(this.game, 0.3, 0.25, '', 0.4, 0.15);
         this.playerNames = [];
         for (let i = 0;i < conf.PLAYER_COUNT;i++) {
             this.playerNames.push(new ui.Text(
-                    this.game, 0.3, 0.4 + i * 0.075, '', {
-                        width: 0.4,
-                        height: 0.75,
+                    this.game, 0.3, 0.4 + i * 0.075, '', 0.4, 0.75, {
                         boundsAlignH: 'left'
                     }
             ));

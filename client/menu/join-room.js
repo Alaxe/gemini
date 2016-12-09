@@ -11,10 +11,9 @@ class JoinRoom {
     create() {
         this.stage.backgroundColor = conf.Background.menu;
 
-        this.title = new ui.Text(this.game, 0.3, 0.35, 'Enter room code', {
-            width: 0.4,
-            height: 0.1
-        });
+        this.title = new ui.Text(this.game, 0.3, 0.35, 'Enter room code',
+                0.4, 0.1);
+
         this.idInput = new ui.InputField(this.game, 0.3, 0.45, {
             width: 0.4,
             placeHolder: 'Room Id'

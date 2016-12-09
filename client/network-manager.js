@@ -5,6 +5,7 @@ class NetworkManager {
 
         //this.onlinePlayers = {};
         this.on = {
+            diamondPickup: new Phaser.Signal(),
             keyframeUpdate: new Phaser.Signal(),
             tileUpdate: new Phaser.Signal(),
             roomUpdate: new Phaser.Signal(),
@@ -29,7 +30,6 @@ class NetworkManager {
     }
 
     clearListeners() {
-        //console.log(this.on);
         for (let id in this.on) {
             this.on[id].removeAll();
         }
@@ -66,6 +66,15 @@ class NetworkManager {
         this.send({
             type: 'exitReady',
             ready: ready
+        });
+    }
+    sendDiamondPickup(id) {
+        this.send({
+            type: 'broadcast',
+            body: {
+                type: 'diamondPickup',
+                id: id
+            }
         });
     }
 

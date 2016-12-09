@@ -1,3 +1,4 @@
+'use strict';
 const JoinRoom = require('./join-room.js');
 const LevelEnd = require('./level-end.js');
 const Lobby = require('./lobby.js');

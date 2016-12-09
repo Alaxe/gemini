@@ -22,6 +22,17 @@
             "heightPx": 32
         }
     },
+    "DiamondCounter": {
+        "margin": 10,
+        "textWidth": 1,
+        "textHeight": 0.075,
+        "textStyle": {
+            "boundsAlignH": "left",
+            "boundsAlignV": "middle",
+            "font": "20px Roboto",
+            "fill": "#FFFFFF"
+        }
+    },
     "Highlight": {
         "Y": {
             "min": -1,
@@ -39,7 +50,12 @@
             "ON": 21,
             "OFF": 20
         },
-        "EXIT_BLOCK_ID": 22
+        "EXIT_BLOCK_ID": 22,
+        "DIAMOND_ID": 23,
+        "HelpText": {
+            "font": "18px Roboto",
+            "fill": "#FFFFFF"
+        }
     },
     "fonts": ["Roboto"],
     "Text": {

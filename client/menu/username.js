@@ -9,10 +9,8 @@ class Username {
     create() {
         this.stage.backgroundColor = conf.Background.menu;
 
-        this.label = new ui.Text(this.game, 0.3, 0.4, 'Pick a username', {
-            width: 0.4,
-            height: 0.1
-        });
+        this.label = new ui.Text(this.game, 0.3, 0.4, 'Pick a username',
+                0.4, 0.1);
 
         this.button = new ui.Button(this.game, 0.3, 0.6, 'Start', 0.4, 0.1, true);
         this.input = new ui.InputField(this.game, 0.3, 0.5, {

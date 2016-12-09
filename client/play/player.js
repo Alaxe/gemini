@@ -11,12 +11,9 @@ class Player extends Phaser.Sprite {
         this.labelX = -labelWidth * 0.5;
         this.labelY = ui.util.vPart(-0.5 * this.height) - labelHeight;
 
-        let labelStyle = Object.assign({}, conf.Player.Label, {
-            width: labelWidth,
-            height: labelHeight
-        });
-        this.label = new ui.Text(game, this.labelX, this.labelY, username, 
-                labelStyle);
+        let labelStyle = Object.assign({}, conf.Player.Label);
+        this.label = new ui.Text(game, this.labelX, this.labelY, username,
+                labelWidth, labelHeight, labelStyle);
         this.addChild(this.label);
 
         this.anchor.setTo(0.5, 0.5);

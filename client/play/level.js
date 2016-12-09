@@ -1,5 +1,6 @@
 'use strict';
 const conf = require('../conf.json');
+const ui = require('../ui');
 function rotateMask(mask, rotationRad) {
     let rotCnt = Math.round(rotationRad / Math.PI * 2);
     let firstMask = mask;
@@ -103,6 +104,38 @@ class Level {
         this.platformLayer = this.map.createLayer('platforms');
         this.platformLayer.resizeWorld();
 
+        this.diamonds = this.game.add.group();
+        //this.map.createFromObjects('objects', conf.Level.DIAMOND_ID, 'diamond',
+                //0, true, false, this.diamonds);
+
+        this.helpTexts = this.game.add.group();
+        console.log(this.map.objects.objects);
+
+        let diamondCnt = 0;
+        for (let object of this.map.objects.objects) {
+            if (object.type === 'text') {
+                this.helpTexts.add(new ui.Text(
+                    this.game,
+                    ui.util.hPart(object.x),
+                    ui.util.vPart(object.y),
+                    object.properties.text,
+                    ui.util.hPart(object.width),
+                    ui.util.vPart(object.height),
+                    conf.Level.HelpText
+                ));
+            } else if (object.type === 'diamond') {
+                let cur = this.game.add.sprite(object.x,
+                        object.y, 'diamond');
+                cur.y -= cur.height;
+                cur.index = diamondCnt++;
+                this.diamonds.add(cur);
+            }
+        }
+        this.game.physics.enable(this.diamonds, Phaser.Physics.ARCADE);
+
+        this.buildNetwork();
+        this.simulatePower();
+
         console.log(conf.Level.COLLISION_TILE_ID);
         this.map.setCollision(conf.Level.COLLISION_TILE_ID, true, 'platforms');
 
@@ -114,9 +147,8 @@ class Level {
             return true;
         }, this, 'platforms');
 
-        this.buildNetwork();
-        this.simulatePower();
     }
+
 
     static useTile(tile) {
         if ((tile == null) || (!tile.properties.usable)) {
