@@ -39,11 +39,12 @@ class UseManager extends Phaser.Graphics {
         let tileH = this.layer.map.tileHeight;
 
         let bestDist;
+        const yEPS = 0.1
 
         for (let dY = conf.Y.min;dY <= conf.Y.max;dY++) {
             for (let dX = conf.X.min;dX <= conf.X.max;dX++) {
                 let newX = this.player.x + this.player.scale.x * dX * tileW;
-                let newY = this.player.y + this.player.scale.y * dY * tileH;
+                let newY = this.player.y + this.player.scale.y * dY * tileH + yEPS;
 
                 let tileX = this.layer.getTileX(newX);
                 let tileY = this.layer.getTileY(newY);
