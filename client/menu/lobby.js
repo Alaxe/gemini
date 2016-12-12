@@ -1,7 +1,6 @@
 'use strict';
 const conf = require('../conf.json');
 const ui = require('../ui');
-const levelData = require('../level-data.json');
 
 class Lobby {
     init(roomData = null) {
@@ -62,7 +61,7 @@ class Lobby {
 
     updateData() {
         this.gameCode.setText('Room Id:\n' + this.data.roomId, true);
-        this.currentLevel.setData(levelData[this.data.levelIndex]);
+        this.currentLevel.changeIndex(this.data.levelIndex);
 
         for (let i = 0;i < this.playerNames.length;i++) {
             if (this.data.players[i]) {

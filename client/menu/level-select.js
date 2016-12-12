@@ -24,7 +24,7 @@ class LevelSelect {
             let x = startX + gridX * conf.LevelPreview.width;
             let y = startY + gridY * conf.LevelPreview.height;
 
-            let cur = new ui.LevelPreview(this.game, x, y, levelData[i]);
+            let cur = new ui.LevelPreview(this.game, x, y, i);
 
             cur.onClick.add(() => {
                 this.network.selectLevel(i);

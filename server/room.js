@@ -8,7 +8,7 @@ class Room extends EventEmitter {
         super();
 
         this.id = id;
-        this.levelIndex = 0;
+        this.levelIndex = null;
         this.players = [];
         this.playing = false;
     }
@@ -68,6 +68,11 @@ class Room extends EventEmitter {
             ws.send(JSON.stringify({
                 type: 'lobbyError',
                 content: 'Not enought players'
+            }));
+        } else if (this.levelIndex === null) {
+            ws.send(JSON.stringify({
+                type: 'lobbyError',
+                content: 'Select a level'
             }));
         } else if (this.playing) {
             ws.send(JSON.stringify({

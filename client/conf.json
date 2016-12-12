@@ -48,7 +48,10 @@
             "hover": 0x2D3A47
         },
         "width": 0.15,
-        "height": 0.15
+        "height": 0.15,
+        "defaultLevelData": {
+            "title": "Select a Level"
+        }
     },
     "Highlight": {
         "Y": {
