@@ -42,7 +42,7 @@ class NetworkManager {
         this.sendOnOpen({
             type: 'joinRoom',
             roomId: roomId,
-            username: this.game.global.username
+            username: localStorage.getItem('username')
         });
     }
     leaveRoom() {
@@ -60,7 +60,7 @@ class NetworkManager {
     createRoom() {
         this.sendOnOpen({
             type: 'createRoom',
-            username: this.game.global.username
+            username: localStorage.getItem('username')
         });
     }
 
@@ -104,7 +104,7 @@ class NetworkManager {
                 x: player.x,
                 y: player.y,
                 time: this.game.time.now,
-                username: this.game.global.username
+                username: localStorage.getItem('username')
             }
         });
     }

@@ -17,4 +17,4 @@ for (let menuKey in menu) {
 }
 game.state.add('play', new PlayState());
 
-game.state.start('username');
+game.state.start('mainMenu');

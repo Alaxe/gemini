@@ -19,7 +19,7 @@ class Username {
         });
 
         this.button.onClick.add(() => {
-            this.game.global.username = this.input.getValue();
+            localStorage.setItem('username', this.input.getValue());
             this.game.state.start('mainMenu');
         });
     }

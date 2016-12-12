@@ -3,7 +3,11 @@ const conf = require('../conf.json');
 const ui = require('../ui');
 
 class MainMenu {
-    init() {}
+    init() {
+        if (!localStorage.getItem('username')) {
+            this.state.start('username');
+        }
+    }
     preload() {
         ui.util.loadFont();
     }

@@ -18,10 +18,10 @@ class Button extends Phaser.Group {
         width = width || style.width;
         height = height || style.height;
 
-        let bgWidthPx = util.hPx(width) - 2 * style.margin;
-        let bgHeightPx = util.vPx(height) - 2 * style.margin;
-        let bgXPx = style.margin;
-        let bgYPx = style.margin;
+        let bgWidthPx = util.hPx(width) - 2 * style.hMargin;
+        let bgHeightPx = util.vPx(height) - 2 * style.vMargin;
+        let bgXPx = style.hMargin;
+        let bgYPx = style.vMargin;
         let bgRadius = style.rectRadius;
 
         this.bg = game.add.graphics();
@@ -50,8 +50,8 @@ class Button extends Phaser.Group {
 
         let labelStyle = Object.assign({}, style.Text);
 
-        let labelW = width - util.hPart(style.margin);
-        let labelH = height - util.vPart(style.margin);
+        let labelW = width - util.hPart(style.hMargin);
+        let labelH = height - util.vPart(style.vMargin);
 
         this.label = new Text(game, 0, 0, labelText, labelW, labelH, labelStyle);
         this.add(this.label);

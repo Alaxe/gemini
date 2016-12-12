@@ -6,6 +6,10 @@ class Lobby {
     init(roomData = null) {
         this.data = roomData;
     }
+    preload() {
+        this.load.image('diamond', '../assets/sprites/diamond.png');
+        this.load.image('tick', '../assets/sprites/tick.png');
+    }
     createUIElements() {
         this.gameCode = new ui.Text(this.game, 0.3, 0.25, '', 0.4, 0.15);
         this.playerNames = [];
@@ -17,7 +21,7 @@ class Lobby {
             ));
         };
 
-        this.currentLevel = new ui.LevelPreview(this.game, 0.55, 0.4);
+        this.currentLevel = new ui.LevelPreview(this.game, 0.525, 0.4);
 
         this.start = new ui.Button(this.game, 0.25, 0.6, 'Start', 0.25, 0.1);
         this.leave = new ui.Button(this.game, 0.5, 0.6, 'Leave', 0.25, 0.1);
@@ -63,12 +67,17 @@ class Lobby {
         this.gameCode.setText('Room Id:\n' + this.data.roomId, true);
         this.currentLevel.changeIndex(this.data.levelIndex);
 
+        let foundYou = false;
         for (let i = 0;i < this.playerNames.length;i++) {
             if (this.data.players[i]) {
-                if (this.data.players[i] == this.game.global.username) {
-                    this.data.players[i] += ' (you)';
+                let curText = ' - ' + this.data.players[i];
+                if (this.data.players[i] == localStorage.getItem('username')) {
+                    if (!foundYou) {
+                        curText += ' (you)';
+                        foundYou = true;
+                    }
                 }
-                this.playerNames[i].setText(' - ' + this.data.players[i]);
+                this.playerNames[i].setText(curText);
             } else {
                 this.playerNames[i].setText('Waiting ...');
             }

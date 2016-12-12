@@ -6,10 +6,11 @@ class Text extends Phaser.Text {
     constructor(game, x, y, text, width, height, options) {
         let style = Object.assign({}, conf.Text, options);
 
-        let xPx = util.hPx(x);
-        let yPx = util.vPx(y);
+        let xPx = util.hPx(x) + style.hMargin;
+        let yPx = util.vPx(y) + style.vMargin;
         super(game, xPx, yPx, text, style);
-        this.setTextBounds(0, 0, util.hPx(width), util.vPx(height));
+        this.setTextBounds(0, 0, util.hPx(width) - 2 * style.hMargin,
+                util.vPx(height) - 2 * style.vMargin);
 
         //Redraws the text after the font has loaded
         util.loadFont().then(() => {

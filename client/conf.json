@@ -23,7 +23,7 @@
         }
     },
     "LevelSelect": {
-        "hCnt": 5,
+        "hCnt": 4,
         "vCnt": 4
     },
     "DiamondCounter": {
@@ -42,16 +42,21 @@
             "Text": {
                 "font": "20px Roboto",
                 "fill": "#FFFFFF",
-                "boundsAlignV": "middle"
+                "boundsAlignV": "middle",
+                "hMargin": 30
             },
             "fill": 0x435668,
             "hover": 0x2D3A47
         },
-        "width": 0.15,
+        "width": 0.2,
         "height": 0.15,
         "defaultLevelData": {
-            "title": "Select a Level"
-        }
+            "title": "Select a Level",
+            "passed": false,
+            "perfect": false
+        },
+        "iconSize": 24,
+        "iconOffset": 4
     },
     "Highlight": {
         "Y": {
@@ -84,7 +89,9 @@
         "wordWrap": true,
         "wordWrapWidth": 1000000,
         "boundsAlignH": "center",
-        "align": "center"
+        "align": "center",
+        "hMargin": 0,
+        "vMargin": 0
     },
     "Button": {
         "Text": {
@@ -97,7 +104,8 @@
         "hover": 0x0C5CFC,
         "width": 0.4,
         "height": 0.1,
-        "margin": 4
+        "vMargin": 4,
+        "hMargin": 4
     },
     "Error": {
         "Text": {

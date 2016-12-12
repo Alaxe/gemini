@@ -63,20 +63,35 @@ class PlayState {
             this.onlinePlayerManager);
 
         this.network.on.tileUpdate.add(this.level.onTileUpdate, this.level);
+        this.network.on.roomUpdate.add(this.onLevelEnd, this);
+        this.network.on.diamondPickup.add(this.onDiamondPickup, this);
+    }
 
-        this.network.on.roomUpdate.add(msg => {
-            this.game.state.start('levelEnd', true, false, msg, {
-                collected: this.diamondCounter.count,
-                all: levelData[this.levelIndex].diamondCount
-            });
-        });
-        this.network.on.diamondPickup.add(msg => {
-            let diamond = this.level.diamonds.getAt(msg.id);
-            if (diamond.exists) {
-                diamond.kill();
-                this.diamondCounter.increment();
-            }
-        }, this);
+    onLevelEnd(msg) {
+        let key = 'levelData-' + this.levelIndex;
+        let data = JSON.parse(localStorage.getItem(key)) || {};
+
+        data.passed = true;
+
+        let diamondData = {
+            collected: this.diamondCounter.count,
+            all: levelData[this.levelIndex].diamondCount
+        };
+        if (diamondData.collected == diamondData.all) {
+            data.perfect = true;
+        }
+
+        localStorage.setItem(key, JSON.stringify(data));
+
+        this.game.state.start('levelEnd', true, false, msg, diamondData);
+    }
+
+    onDiamondPickup(msg) {
+        let diamond = this.level.diamonds.getAt(msg.id);
+        if (diamond.exists) {
+            diamond.kill();
+            this.diamondCounter.increment();
+        }
     }
 
     update() {
