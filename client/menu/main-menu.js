@@ -14,10 +14,13 @@ class MainMenu {
     create() {
         this.stage.backgroundColor = conf.Background.menu;
 
-        this.title = new ui.Text(this.game, 0.3, 0.4, 'Start a game', 0.4, 0.1);
+        this.title = new ui.Text(this.game, 0.3, 0.25, 'Gemini', 0.4, 0.1, {
+            font: '35px Roboto'
+        });
 
-        this.createRoom = new ui.Button(this.game, 0.3, 0.5, 'Create a room');
-        this.joinRoom = new ui.Button(this.game, 0.3, 0.6, 'Join a room');
+        this.createRoom = new ui.Button(this.game, 0.3, 0.4, 'Create a room');
+        this.joinRoom = new ui.Button(this.game, 0.3, 0.5, 'Join a room');
+        this.options = new ui.Button(this.game, 0.3, 0.6, 'Options');
 
         this.network = this.game.global.network;
         this.network.clearListeners();
@@ -30,6 +33,9 @@ class MainMenu {
         });
         this.joinRoom.onClick.add(() => {
             this.game.state.start('joinRoom');
+        });
+        this.options.onClick.add(() => {
+            this.game.state.start('options');
         });
 
     }
