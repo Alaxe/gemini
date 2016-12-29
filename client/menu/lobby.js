@@ -41,7 +41,7 @@ class Lobby {
         }, this);
 
         this.network.on.startGame.add(msg => {
-            this.state.start('play', true, false, msg.levelIndex);
+            this.state.start('play', true, false, msg);
         }, this);
         this.network.on.lobbyError.add(msg => {
             this.error.setText(msg.content);

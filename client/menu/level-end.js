@@ -26,7 +26,7 @@ class LevelEnd {
             this.roomData = msg;
         });
         this.network.on.startGame.add(msg => {
-            this.state.start('play', true, false, msg.levelIndex);
+            this.state.start('play', true, false, msg);
         });
 
         this.lobby.onClick.add(() => {

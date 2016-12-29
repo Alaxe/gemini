@@ -14,8 +14,9 @@ const UseManager = require('./use-highlight.js');
 class PlayState {
     constructor() {}
 
-    init(levelIndex) {
-        this.levelIndex = levelIndex;
+    init(msg) {
+        this.levelIndex = msg.levelIndex;
+        this.spawnIndex = msg.playerIndex;
     }
     preload() {
         this.load.image('platforms', '../assets/sprites/platforms.png')
@@ -37,10 +38,10 @@ class PlayState {
         this.physics.arcade.gravity.y = conf.GRAVITY;
 
         this.level = new Level(this.game, this.levelIndex);
-
         this.network = this.game.global.network;
 
-        this.player = new LocalPlayer(this.game);
+        let playerSpawn = this.level.getSpawnPosition(this.spawnIndex);
+        this.player = new LocalPlayer(this.game, playerSpawn.x, playerSpawn.y);
         this.camera.follow(this.player, Phaser.Camera.FOLLOW_LOCKON,
             conf.CAMERA_INTERPOLATION, conf.CAMERA_INTERPOLATION);
 

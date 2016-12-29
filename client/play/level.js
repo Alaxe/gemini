@@ -105,6 +105,7 @@ class Level {
 
         this.diamonds = this.game.add.group();
         this.helpTexts = this.game.add.group();
+        this.spawns = [];
 
         let diamondCnt = 0;
         for (let object of this.map.objects.objects) {
@@ -124,6 +125,11 @@ class Level {
                 cur.y -= cur.height;
                 cur.index = diamondCnt++;
                 this.diamonds.add(cur);
+            } else if (object.type === 'spawn') {
+                this.spawns.push({
+                    x: object.x + object.width / 2,
+                    y: object.y + object.height / 2
+                });
             }
         }
         this.game.physics.enable(this.diamonds, Phaser.Physics.ARCADE);
@@ -180,6 +186,16 @@ class Level {
 
         if (msg.layer == 'cables') {
             this.simulatePower();
+        }
+    }
+
+    getSpawnPosition(spawnIndex = 0) {
+        if (this.spawns.length === 0) {
+            return {x: 0, y: 0}
+        } else if (this.spawns.length === 1) {
+            return this.spawns[0];
+        } else {
+            return this.spawns[spawnIndex];
         }
     }
 

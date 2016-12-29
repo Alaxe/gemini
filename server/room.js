@@ -80,15 +80,15 @@ class Room extends EventEmitter {
                 content: 'Already playing'
             }));
         } else {
-            let msgStr = JSON.stringify({
-                type: 'startGame',
-                levelIndex: this.levelIndex
-            });
-
             this.playing = true;
-            for (let player of this.players) {
-                player.exitReady = false;
-                player.ws.send(msgStr);
+
+            for (let i = 0;i < this.players.length;i++) {
+                this.players[i].exitReady = false;
+                this.players[i].ws.send(JSON.stringify({
+                    type: 'startGame',
+                    levelIndex: this.levelIndex,
+                    playerIndex: i
+                }));
             }
         }
     }
