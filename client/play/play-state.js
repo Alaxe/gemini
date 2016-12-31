@@ -42,8 +42,10 @@ class PlayState {
 
         let playerSpawn = this.level.getSpawnPosition(this.spawnIndex);
         this.player = new LocalPlayer(this.game, playerSpawn.x, playerSpawn.y);
+
         this.camera.follow(this.player, Phaser.Camera.FOLLOW_LOCKON,
             conf.CAMERA_INTERPOLATION, conf.CAMERA_INTERPOLATION);
+        this.camera.focusOn(this.player);
 
         this.useManager = new UseManager(this.game, this.level,
                 this.player);
@@ -76,7 +78,7 @@ class PlayState {
 
         let diamondData = {
             collected: this.diamondCounter.count,
-            all: levelData[this.levelIndex].diamondCount
+            all: this.level.diamondCount
         };
         if (diamondData.collected == diamondData.all) {
             data.perfect = true;

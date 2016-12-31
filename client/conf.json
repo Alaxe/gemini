@@ -70,17 +70,18 @@
         "color": 0xFFFFFF
     },
     "Level": {
-        "COLLISION_TILE_ID": [19, 21, 22],
+        "COLLISION_TILE_ID": [21, 23, 24],
         "Hologram": {
-            "ON": 21,
-            "OFF": 20
+            "ON": 23,
+            "OFF": 22
         },
-        "EXIT_BLOCK_ID": 22,
-        "DIAMOND_ID": 23,
+        "EXIT_BLOCK_ID": 24,
+        "DIAMOND_ID": 25,
         "HelpText": {
             "font": "18px Roboto",
             "fill": "#FFFFFF"
-        }
+        },
+        "UNDERGROUND_RANGE": 3
     },
     "fonts": ["Roboto"],
     "Text": {
