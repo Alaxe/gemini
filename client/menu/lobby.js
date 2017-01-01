@@ -61,6 +61,8 @@ class Lobby {
     create() {
         this.createUIElements();
         this.addEventListeners();
+
+        this.game.global.soundtrack.play('menu');
     }
 
     updateData() {

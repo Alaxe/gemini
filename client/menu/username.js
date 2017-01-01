@@ -5,6 +5,7 @@ const ui = require('../ui');
 class Username {
     preload() {
         ui.util.loadFont();
+        this.game.global.soundtrack.load();
     }
     create() {
         this.stage.backgroundColor = conf.Background.menu;
@@ -22,6 +23,8 @@ class Username {
             localStorage.setItem('username', this.input.getValue());
             this.game.state.start('mainMenu');
         });
+
+        this.game.global.soundtrack.play('menu');
     }
 };
 

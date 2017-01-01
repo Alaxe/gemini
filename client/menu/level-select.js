@@ -45,6 +45,8 @@ class LevelSelect {
         this.network.on.startGame.add(msg => {
             this.state.start('play', true, false, msg);
         });
+
+        this.game.global.soundtrack.play('menu');
     }
 };
 

@@ -32,6 +32,8 @@ class LevelEnd {
         this.lobby.onClick.add(() => {
             this.state.start('lobby', true, false, this.roomData);
         });
+
+        this.game.global.soundtrack.play('menu');
     }
 };
 

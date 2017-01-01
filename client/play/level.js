@@ -22,7 +22,7 @@ class Level {
         this.platformLayer.resizeWorld();
 
         this.addObjects();
-        
+
         this.logicNetwork = new LogicNetwork(this.map);
         this.logicNetwork.simulatePower();
 

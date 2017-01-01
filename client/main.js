@@ -2,6 +2,7 @@
 
 const conf = require('./conf.json');
 const NetworkManager = require('./network-manager.js');
+const SoundtrackManager = require('./soundtrack-manager.js');
 
 const PlayState = require('./play/play-state.js');
 const menu = require('./menu');
@@ -9,7 +10,8 @@ const menu = require('./menu');
 let game = new Phaser.Game(conf.GAME_W, conf.GAME_H, Phaser.WEBGL, '');
 
 game.global = {
-    network: new NetworkManager(game)
+    network: new NetworkManager(game),
+    soundtrack: new SoundtrackManager(game)
 };
 
 for (let menuKey in menu) {

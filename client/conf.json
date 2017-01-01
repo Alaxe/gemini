@@ -132,5 +132,10 @@
     "Background": {
         "menu": "#eee",
         "play": "#435668"
+    },
+    "Soundtrack": {
+        "tracks": ["menu", "level"],
+        "fade": 1000,
+        "volume": 0.15
     }
 }

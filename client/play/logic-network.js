@@ -262,14 +262,13 @@ class LogicNetwork {
 
         let queue = [startTile];
 
-        
+
         while (queue.length > 0) {
             let curTile = queue[0];
             queue.shift();
 
             let direct = this.getDirectAdjacent(curTile);
             let underground = this.getUndergroundAdjacent(curTile);
-            console.log('Direct', direct);
 
             let adjacent = direct.concat(underground);
 

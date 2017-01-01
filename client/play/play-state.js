@@ -30,6 +30,8 @@ class PlayState {
     create() {
         this.createObjects();
         this.createListeners();
+
+        this.game.global.soundtrack.play('level');
     }
     createObjects() {
         this.stage.backgroundColor = conf.Background.play;

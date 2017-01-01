@@ -65,9 +65,7 @@ class Button extends Phaser.Group {
     }
 
     setText(text) {
-        console.log(text);
         this.label.setText(text);
-        console.log(this.label);
     }
 };
 

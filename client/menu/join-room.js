@@ -38,6 +38,8 @@ class JoinRoom {
         this.network.on.roomUpdate.addOnce((msg) => {
             this.state.start('lobby', true, false, msg);
         });
+
+        this.game.global.soundtrack.play('menu');
     }
 };
 

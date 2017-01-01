@@ -1,3 +1,5 @@
+'use strict';
+
 class NetworkManager {
     constructor(game) {
         this.game = game;
