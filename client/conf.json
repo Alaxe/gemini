@@ -14,13 +14,15 @@
         "AIR_VELOCITY": 300,
         "JUMP_VELOCITY": 800,
         "JUMP_INTERVAL_MS": 750,
-        "INTERPOLATION_DELAY_MS": 200,
         "Label": {
             "fill": "#FFFFFF",
             "font": "12px Roboto",
             "widthPx": 96,
             "heightPx": 32
         }
+    },
+    "Network": {
+        "INTERPOLATION_DELAY_MS": 200
     },
     "LevelSelect": {
         "hCnt": 4,
@@ -136,6 +138,13 @@
     "Soundtrack": {
         "tracks": ["menu", "level"],
         "fade": 1000,
-        "volume": 0.15
+        "volume": 0.2
+    },
+    "SFX": {
+        "effects": ["click", "jump", "pickup", "poweron", "poweroff",
+                "teleport"],
+        "volume": 0.5,
+        "distanceScale": 0.02
+
     }
 }

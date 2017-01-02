@@ -8,7 +8,7 @@ module.exports = function(grunt) {
         },
         trimtrailingspaces: {
             all: {
-                src: ['client/**/*.js', 'server/**/*.js', 'Gruntfile.js'],
+                src: ['client/**/*.js*', 'server/**/*.js*', 'Gruntfile.js'],
                 options: {
                     filter: 'isFile',
                     failIfTrimmed: false

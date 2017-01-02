@@ -5,7 +5,7 @@ class Options {
     init() {}
     create() {
         this.heading = new ui.Text(this.game, 0.3, 0.3, 'Options', 0.4, 0.1);
-        this.changeUsername = new ui.Button(this.game, 0.3, 0.4, 
+        this.changeUsername = new ui.Button(this.game, 0.3, 0.4,
                 'Change username');
         this.resetProgress = new ui.Button(this.game, 0.3, 0.5, 'Reset progress');
         this.back = new ui.Button(this.game, 0.3, 0.6, 'Back');

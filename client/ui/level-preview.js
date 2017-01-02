@@ -17,8 +17,8 @@ class LevelPreview extends Button {
     constructor(game, x, y, index = null) {
         let data = LevelPreview.getLevelData(index);
         super(game, x, y, data.title, conf.LevelPreview.width,
-                conf.LevelPreview.height, false, conf.LevelPreview.Button);
-        //
+                conf.LevelPreview.height, conf.LevelPreview.Button);
+
         //console.log(util.hPx(conf.width - 32));
 
         let hMargin = conf.LevelPreview.Button.hMargin

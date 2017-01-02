@@ -92,7 +92,8 @@ function rotateMask(mask, rotationRad) {
 }
 
 class LogicNetwork {
-    constructor(tileMap) {
+    constructor(game, tileMap) {
+        this.game = game;
         this.map = tileMap;
         this.platformLayer = tileMap.layers[tileMap.getLayer('platforms')];
         this.cableLayer = tileMap.layers[tileMap.getLayer('cables')];
@@ -346,7 +347,7 @@ class LogicNetwork {
         }
     }
 
-    simulatePower() {
+    simulatePower(silent = false) {
         let queue = [];
         for (let cc of this.cableComponents) {
             cc.inputsLeft = cc.input.length;
@@ -377,14 +378,28 @@ class LogicNetwork {
         }
         this.cableLayer.dirty = true;
 
-        this.powerHolograms();
+        this.powerHolograms(silent);
     }
-    powerHolograms() {
+    powerHolograms(silent = false) {
         for (let hologram of this.holograms) {
             let hasPower = hologram.properties.component
                 ? hologram.properties.component.hasInput
                 : false;
 
+            let newIndex = hasPower
+                ? conf.Level.Hologram.ON
+                : conf.Level.Hologram.OFF;
+
+            if (newIndex != hologram.index) {
+                let effect = hasPower
+                    ? "poweron"
+                    : "poweroff";
+
+                if (!silent) {
+                    this.game.global.sfx.playBroadcast(effect, hologram.worldX,
+                            hologram.worldY);
+                }
+            }
             hologram.index = hasPower
                 ? conf.Level.Hologram.ON
                 : conf.Level.Hologram.OFF;

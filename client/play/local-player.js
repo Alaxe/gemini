@@ -50,6 +50,7 @@ class LocalPlayer extends Player {
 
             this.body.velocity.y -= conf.Player.JUMP_VELOCITY;
             this.nextJump = this.game.time.now + conf.Player.JUMP_INTERVAL_MS;
+            this.game.global.sfx.playBroadcast('jump', this.x, this.y);
         }
 
         if (this.body.velocity.x < 0) {

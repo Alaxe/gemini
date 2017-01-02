@@ -11,6 +11,7 @@ class MainMenu {
     preload() {
         ui.util.loadFont();
         this.game.global.soundtrack.load();
+        this.game.global.sfx.load();
     }
     create() {
         this.stage.backgroundColor = conf.Background.menu;
@@ -38,7 +39,7 @@ class MainMenu {
         this.options.onClick.add(() => {
             this.game.state.start('options');
         });
-        
+
         this.game.global.soundtrack.play('menu');
     }
 };

@@ -6,6 +6,7 @@ class Username {
     preload() {
         ui.util.loadFont();
         this.game.global.soundtrack.load();
+        this.game.global.sfx.load();
     }
     create() {
         this.stage.backgroundColor = conf.Background.menu;
@@ -13,7 +14,9 @@ class Username {
         this.label = new ui.Text(this.game, 0.3, 0.4, 'Pick a username',
                 0.4, 0.1);
 
-        this.button = new ui.Button(this.game, 0.3, 0.6, 'Start', 0.4, 0.1, true);
+        this.button = new ui.Button(this.game, 0.3, 0.6, 'Start', 0.4, 0.1, {
+            enterActivate: true
+        });
         this.input = new ui.InputField(this.game, 0.3, 0.5, {
             width: 0.4,
             placeHolder: 'Username'

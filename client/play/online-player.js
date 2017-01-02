@@ -13,10 +13,6 @@ class OnlinePlayer extends Player {
         this.meanSampleCnt = 0;
     }
 
-    static handleKeyframeUpdate(msg) {
-
-    }
-
     addKeyframe(msg) {
         this.keyframes.push(msg);
 
@@ -25,19 +21,14 @@ class OnlinePlayer extends Player {
             this.y = this.keyframes[0].y;
         }
 
-        let timeDiff = this.game.time.now - msg.time;
-
-        this.meanTimeDiff *= this.meanSampleCnt / (this.meanSampleCnt + 1);
-        this.meanSampleCnt++;
-
-        this.meanTimeDiff += timeDiff / this.meanSampleCnt;
     }
     update() {
-        let netNow = this.game.time.now
+        /*let netNow = this.game.time.now
                 - conf.Player.INTERPOLATION_DELAY_MS
-                - this.meanTimeDiff;
+                - this.game.global.network.meanTimeDiff;*/
+        let now = this.game.time.now;
 
-        while ((this.keyframes.length > 1) && (this.keyframes[1].time < netNow)) {
+        while ((this.keyframes.length > 1) && (this.keyframes[1].time < now)) {
             this.keyframes.shift();
         }
 
@@ -45,7 +36,7 @@ class OnlinePlayer extends Player {
         if (this.keyframes.length > 1) {
             let next = this.keyframes[1];
 
-            let traversedPart = (netNow - prev.time) / (next.time - prev.time);
+            let traversedPart = (now - prev.time) / (next.time - prev.time);
 
             this.x = prev.x + (next.x - prev.x) * traversedPart;
             this.y = prev.y + (next.y - prev.y) * traversedPart;

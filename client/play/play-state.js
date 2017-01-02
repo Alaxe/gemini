@@ -30,8 +30,6 @@ class PlayState {
     create() {
         this.createObjects();
         this.createListeners();
-
-        this.game.global.soundtrack.play('level');
     }
     createObjects() {
         this.stage.backgroundColor = conf.Background.play;
@@ -41,6 +39,9 @@ class PlayState {
 
         this.level = new Level(this.game, this.levelIndex);
         this.network = this.game.global.network;
+        this.sfx = this.game.global.sfx;
+
+        this.game.global.soundtrack.play('level');
 
         let playerSpawn = this.level.getSpawnPosition(this.spawnIndex);
         this.player = new LocalPlayer(this.game, playerSpawn.x, playerSpawn.y);
@@ -51,6 +52,7 @@ class PlayState {
 
         this.useManager = new UseManager(this.game, this.level,
                 this.player);
+        this.useManager.onUse.add(this.level.onUseTile, this.level);
 
         this.onlinePlayerManager = new OnlinePlayerManager(this.game);
         this.diamondCounter = new ui.DiamondCounter(this.game);
@@ -59,7 +61,6 @@ class PlayState {
         this.network.clearListeners();
 
         this.level.onTileChange.add(this.network.sendTileUpdate, this.network);
-
         this.player.onExitReady.add(this.network.sendExitReady, this.network);
 
         this.network.on.keyframeUpdate.add(this
@@ -70,9 +71,12 @@ class PlayState {
         this.network.on.tileUpdate.add(this.level.onTileUpdate, this.level);
         this.network.on.roomUpdate.add(this.onLevelEnd, this);
         this.network.on.diamondPickup.add(this.onDiamondPickup, this);
+
+        this.sfx.initNetwork();
     }
 
     onLevelEnd(msg) {
+        this.sfx.play('teleport');
         let key = 'levelData-' + this.levelIndex;
         let data = JSON.parse(localStorage.getItem(key)) || {};
 
@@ -106,8 +110,10 @@ class PlayState {
             diamond.kill();
             this.diamondCounter.increment();
             this.network.sendDiamondPickup(diamond.index);
+            this.sfx.playBroadcast('pickup', diamond.x, diamond.y);
             return true;
         });
+        this.game.global.sfx.updateListener(this.player.x, this.player.y);
         this.network.sendKeyframe(this.player);
     }
 };

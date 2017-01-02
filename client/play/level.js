@@ -23,8 +23,8 @@ class Level {
 
         this.addObjects();
 
-        this.logicNetwork = new LogicNetwork(this.map);
-        this.logicNetwork.simulatePower();
+        this.logicNetwork = new LogicNetwork(this.game, this.map);
+        this.logicNetwork.simulatePower(true);
 
         this.map.setCollision(conf.Level.COLLISION_TILE_ID, true, 'platforms');
 

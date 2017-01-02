@@ -18,7 +18,9 @@ class UseManager extends Phaser.Graphics {
         this.useButton = this.game.input.keyboard.addKey(Phaser.KeyCode.E);
         this.onUse = new Phaser.Signal();
 
-        this.onUse.add(level.onUseTile.bind(level));
+        this.onUse.add(tile => {
+            this.game.global.sfx.playBroadcast('click', tile.worldX, tile.worldY);
+        });
 
         this.useButton.onDown.add(key => {
             if (this.tile) {

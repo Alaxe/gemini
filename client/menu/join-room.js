@@ -20,7 +20,9 @@ class JoinRoom {
         });
         this.error = new ui.Error(this.game, 0.2, 0.65, 0.6, 0.1);
 
-        this.join = new ui.Button(this.game, 0.3, 0.55, 'Join', 0.2, 0.1, true);
+        this.join = new ui.Button(this.game, 0.3, 0.55, 'Join', 0.2, 0.1, {
+            enterActivate: true
+        });
         this.back = new ui.Button(this.game, 0.5, 0.55, 'Back', 0.2, 0.1);
 
         this.back.onClick.add(() => {
