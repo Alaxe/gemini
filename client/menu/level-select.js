@@ -8,10 +8,6 @@ class LevelSelect {
     init(roomData) {
         this.roomData = roomData;
     }
-    preload() {
-        this.load.image('diamond', '../assets/sprites/diamond.png');
-        this.load.image('tick', '../assets/sprites/tick.png');
-    }
     create() {
         this.title = new ui.Text(this.game, 0, 0.1, 'Select a level', 1, 0.1);
 

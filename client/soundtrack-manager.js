@@ -10,15 +10,6 @@ class SoundtrackManager {
         this.loaded = false;
     }
 
-    load() {
-        if (this.loaded) {
-            return;
-        }
-        this.loaded = true;
-        for (let track of conf.Soundtrack.tracks) {
-            this.game.load.audio(track, `../assets/music/${track}.mp3`);
-        }
-    }
     create() {
         if (this.created) {
             return;

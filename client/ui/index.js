@@ -5,6 +5,7 @@ module.exports = {
     Error: require('./error.js'),
     InputField: require('./input-field.js'),
     LevelPreview: require('./level-preview.js'),
+    ProgressBar: require('./progress-bar.js'),
     Text: require('./text.js'),
     util: require('./util.js')
 };

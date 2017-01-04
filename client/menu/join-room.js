@@ -3,7 +3,6 @@ const conf = require('../conf.json');
 const ui = require('../ui');
 
 class JoinRoom {
-    preload() {}
     onJoinError(msg) {
         this.error.setText(msg.content);
     }

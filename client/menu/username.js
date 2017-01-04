@@ -3,11 +3,6 @@ const conf = require('../conf.json');
 const ui = require('../ui');
 
 class Username {
-    preload() {
-        ui.util.loadFont();
-        this.game.global.soundtrack.load();
-        this.game.global.sfx.load();
-    }
     create() {
         this.stage.backgroundColor = conf.Background.menu;
 

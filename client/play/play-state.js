@@ -18,15 +18,6 @@ class PlayState {
         this.levelIndex = msg.levelIndex;
         this.spawnIndex = msg.playerIndex;
     }
-    preload() {
-        this.load.image('platforms', '../assets/sprites/platforms.png')
-        this.load.image('cables', '../assets/sprites/cables.png')
-        this.load.image('diamond', '../assets/sprites/diamond.png');
-
-        Level.loadTilemap(this.game, this.levelIndex);
-
-        this.load.image('player', '../assets/sprites/player.png');
-    }
     create() {
         this.createObjects();
         this.createListeners();
@@ -92,7 +83,7 @@ class PlayState {
             }
             localStorage.setItem(key, JSON.stringify(data));
 
-            this.game.state.start('levelEnd', true, false, msg, diamondData);
+            this.game.state.start('levelEnd', true, false, msg.roomUpdate, diamondData);
         } else {
             this.game.state.start('lobby', true, false, msg.roomUpdate);
         }

@@ -2,7 +2,6 @@ const ui = require('../ui');
 const levelData = require('../level-data.json');
 
 class Options {
-    init() {}
     create() {
         this.heading = new ui.Text(this.game, 0.3, 0.3, 'Options', 0.4, 0.1);
         this.changeUsername = new ui.Button(this.game, 0.3, 0.4,

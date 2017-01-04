@@ -5,6 +5,7 @@ const NetworkManager = require('./network-manager.js');
 const SFXManager = require('./sfx-manager.js');
 const SoundtrackManager = require('./soundtrack-manager.js');
 
+const Loader = require('./loader.js');
 const PlayState = require('./play/play-state.js');
 const menu = require('./menu');
 
@@ -20,5 +21,6 @@ for (let menuKey in menu) {
     game.state.add(menuKey, menu[menuKey]);
 }
 game.state.add('play', new PlayState());
+game.state.add('load', new Loader());
 
-game.state.start('mainMenu');
+game.state.start('load');

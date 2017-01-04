@@ -6,10 +6,6 @@ class Lobby {
     init(roomData = null) {
         this.data = roomData;
     }
-    preload() {
-        this.load.image('diamond', '../assets/sprites/diamond.png');
-        this.load.image('tick', '../assets/sprites/tick.png');
-    }
     createUIElements() {
         this.stage.backgroundColor = conf.Background.menu;
 

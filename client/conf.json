@@ -133,20 +133,33 @@
         "blockInput": false,
         "max": 12
     },
+    "ProgressBar": {
+        "rectRadius": 10,
+        "width": 0.6,
+        "height": 0.1,
+        "fill": 0x1C67FF,
+        "background": 0xFFFFFF,
+        "initialProgress": 0
+    },
     "Background": {
         "menu": "#eee",
         "play": "#435668"
     },
     "Soundtrack": {
+        "root": "../assets/music/",
         "tracks": ["menu", "level"],
         "fade": 1000,
         "volume": 0.2
     },
     "SFX": {
+        "root": "../assets/sfx/",
         "effects": ["click", "jump", "pickup", "poweron", "poweroff",
                 "teleport"],
         "volume": 0.5,
         "distanceScale": 0.02
-
+    },
+    "Loader": {
+        "sprites": ["diamond", "cables", "platforms", "player", "tick"],
+        "spritesRoot": "../assets/sprites/"
     }
 }

@@ -5,29 +5,19 @@ class SFXManager {
     constructor(game) {
         this.game = game;
 
-        this.loaded = false;
-
-        this.recycleSFX = {};
         this.sounds = [];
         this.posSounds = [];
 
         this.listener = null;
-    }
 
-    load() {
-        if (this.loaded) {
-            return;
-        }
-        this.loaded = true;
-
+        this.recycleSFX = {};
         for (let effect of conf.SFX.effects) {
-            this.game.load.audio(effect, `../assets/sfx/${effect}.wav`);
             this.recycleSFX[effect] = [];
         }
     }
+
     initNetwork() {
         this.game.global.network.on.SFXPlay.add(msg => {
-            console.log('hi');
             this.play(msg.effect, msg.x, msg.y);
         });
     }

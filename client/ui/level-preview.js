@@ -14,6 +14,7 @@ class LevelPreview extends Button {
         return Object.assign({}, conf.LevelPreview.defaultLevelData,
                 levelData[index], localData);
     }
+
     constructor(game, x, y, index = null) {
         let data = LevelPreview.getLevelData(index);
         super(game, x, y, data.title, conf.LevelPreview.width,

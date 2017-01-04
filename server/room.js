@@ -59,7 +59,7 @@ class Room extends EventEmitter {
         this.players.splice(this.indexOfWS(ws), 1);
 
         if (this.players.length == 0) {
-            this.emit('empty', this.id);
+            this.emit('empty', this.id);   
         } else if (this.playing) {
             let roomData = this.generateRoomUpdate();
             roomData.error = 'A player disconnected';
@@ -159,7 +159,6 @@ class Room extends EventEmitter {
             } else {
                 console.warn({
                     type: 'invalid message',
-                    sender: ws,
                     body: msg
                 });
             }
