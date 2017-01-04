@@ -34,11 +34,15 @@ let wss = new ws.Server({
 let rooms = {};
 
 function generateRoomId() {
-    return randomstring.generate({
+    let potential = randomstring.generate({
         length: 6,
         charset: 'alphanumeric',
         capitalization: 'lowercase'
     });
+
+    return (potential in rooms)
+        ? generateRoomId()
+        : potential;
 }
 
 function initConnection(ws, msgStr) {
@@ -64,10 +68,13 @@ function initConnection(ws, msgStr) {
 
         let id = generateRoomId();
         rooms[id]= new Room(id);
-        rooms[id].on('playerLeave', (ws) => {
+        rooms[id].on('playerLeave', ws => {
             ws.on('message', msg => {
                 initConnection(ws, msg);
             });
+        });
+        rooms[id].on('empty', id => {
+            delete rooms[id];
         });
 
         rooms[id].addPlayer(ws, msg);

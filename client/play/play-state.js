@@ -69,30 +69,33 @@ class PlayState {
             this.onlinePlayerManager);
 
         this.network.on.tileUpdate.add(this.level.onTileUpdate, this.level);
-        this.network.on.roomUpdate.add(this.onLevelEnd, this);
+        this.network.on.levelEnd.add(this.onLevelEnd, this);
         this.network.on.diamondPickup.add(this.onDiamondPickup, this);
 
         this.sfx.initNetwork();
     }
 
     onLevelEnd(msg) {
-        this.sfx.play('teleport');
-        let key = 'levelData-' + this.levelIndex;
-        let data = JSON.parse(localStorage.getItem(key)) || {};
+        if (msg.passed) {
+            this.sfx.play('teleport');
+            let key = 'levelData-' + this.levelIndex;
+            let data = JSON.parse(localStorage.getItem(key)) || {};
 
-        data.passed = true;
+            data.passed = true;
 
-        let diamondData = {
-            collected: this.diamondCounter.count,
-            all: this.level.diamondCount
-        };
-        if (diamondData.collected == diamondData.all) {
-            data.perfect = true;
+            let diamondData = {
+                collected: this.diamondCounter.count,
+                all: this.level.diamondCount
+            };
+            if (diamondData.collected == diamondData.all) {
+                data.perfect = true;
+            }
+            localStorage.setItem(key, JSON.stringify(data));
+
+            this.game.state.start('levelEnd', true, false, msg, diamondData);
+        } else {
+            this.game.state.start('lobby', true, false, msg.roomUpdate);
         }
-
-        localStorage.setItem(key, JSON.stringify(data));
-
-        this.game.state.start('levelEnd', true, false, msg, diamondData);
     }
 
     onDiamondPickup(msg) {

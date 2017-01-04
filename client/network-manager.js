@@ -9,17 +9,11 @@ class NetworkManager {
         this.meanTimeDiff = 0;
         this.meanSampleCnt = 0;
 
-        this.on = {
-            diamondPickup: new Phaser.Signal(),
-            joinError: new Phaser.Signal(),
-            keyframeUpdate: new Phaser.Signal(),
-            levelFinish: new Phaser.Signal(),
-            lobbyError: new Phaser.Signal(),
-            roomUpdate: new Phaser.Signal(),
-            tileUpdate: new Phaser.Signal(),
-            SFXPlay: new Phaser.Signal(),
-            startGame: new Phaser.Signal()
-        };
+        this.on = {};
+        for (let signal of conf.Network.SIGNALS) {
+            this.on[signal] = new Phaser.Signal();
+        }
+
         this.ws.onmessage = rawMsg => {
             let msg = JSON.parse(rawMsg.data);
 
@@ -48,7 +42,7 @@ class NetworkManager {
                     this.on[msg.type].dispatch(msg);
                 }
             } else {
-                console.log('Received unknown message', msg);
+                console.warn('Received unknown message', msg);
             }
         }
     }

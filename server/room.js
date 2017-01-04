@@ -14,7 +14,7 @@ class Room extends EventEmitter {
     }
 
     canJoin() {
-        return this.players.length <= conf.PLAYER_COUNT;
+        return this.players.length < conf.PLAYER_COUNT;
     }
 
     indexOfWS(ws) {
@@ -32,7 +32,7 @@ class Room extends EventEmitter {
                 return false;
             }
         }
-        return true
+        return true;
     }
 
     broadcast(ws, receivedMsg) {
@@ -55,12 +55,24 @@ class Room extends EventEmitter {
     }
 
     leaveRoom(ws) {
+        ws.removeAllListeners('message');
         this.players.splice(this.indexOfWS(ws), 1);
-        if (!this.playing) {
+
+        if (this.players.length == 0) {
+            this.emit('empty', this.id);
+        } else if (this.playing) {
+            let roomData = this.generateRoomUpdate();
+            roomData.error = 'A player disconnected';
+
+            this.sendAll({
+                type: 'levelEnd',
+                passed: false,
+                roomUpdate: roomData
+            });
+        } else {
             this.sendRoomUpdate();
         }
 
-        ws.removeAllListeners('message');
     }
 
     onStartGameRequest(ws, msg) {
@@ -97,7 +109,12 @@ class Room extends EventEmitter {
         this.players[this.indexOfWS(ws)].exitReady = msg.ready;
         if (this.allExitReady()) {
             this.playing = false;
-            this.sendRoomUpdate();
+
+            this.sendAll({
+                type: 'levelEnd',
+                passed: true,
+                roomUpdate: this.generateRoomUpdate()
+            });
         }
     }
 
@@ -106,7 +123,7 @@ class Room extends EventEmitter {
         this.sendRoomUpdate();
     }
 
-    sendRoomUpdate() {
+    generateRoomUpdate() {
         let msg = {
             type: 'roomUpdate',
             roomId: this.id,
@@ -117,7 +134,10 @@ class Room extends EventEmitter {
         for (let player of this.players) {
             msg.players.push(player.username);
         }
-        this.sendAll(msg);
+        return msg;
+    }
+    sendRoomUpdate() {
+        this.sendAll(this.generateRoomUpdate());
     }
 
     addPlayer(ws, msg) {
@@ -137,7 +157,7 @@ class Room extends EventEmitter {
             } else if (msg.type == 'levelSelect') {
                 this.onLevelSelect(ws, msg);
             } else {
-                throw new Error({
+                console.warn({
                     type: 'invalid message',
                     sender: ws,
                     body: msg

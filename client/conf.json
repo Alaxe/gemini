@@ -22,7 +22,9 @@
         }
     },
     "Network": {
-        "INTERPOLATION_DELAY_MS": 200
+        "INTERPOLATION_DELAY_MS": 200,
+        "SIGNALS": ["diamondPickup", "joinError", "keyframeUpdate", "levelEnd",
+            "lobbyError", "roomUpdate", "tileUpdate", "SFXPlay", "startGame"]
     },
     "LevelSelect": {
         "hCnt": 4,

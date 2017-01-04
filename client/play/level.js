@@ -15,6 +15,8 @@ class Level {
         this.map.addTilesetImage('platforms');
         this.map.addTilesetImage('cables');
 
+        console.log(this.map);
+
         this.cableLayer = this.map.createLayer('cables');
         this.cableLayer.resizeWorld();
 
@@ -52,7 +54,6 @@ class Level {
 
             tile.index = tile.properties.onUseId;
             tile.properties.onUseId = oldIndex;
-
 
             return true;
         }

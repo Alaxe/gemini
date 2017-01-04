@@ -11,6 +11,8 @@ class Lobby {
         this.load.image('tick', '../assets/sprites/tick.png');
     }
     createUIElements() {
+        this.stage.backgroundColor = conf.Background.menu;
+
         this.gameCode = new ui.Text(this.game, 0.3, 0.25, '', 0.4, 0.15);
         this.playerNames = [];
         for (let i = 0;i < conf.PLAYER_COUNT;i++) {
@@ -68,6 +70,10 @@ class Lobby {
     updateData() {
         this.gameCode.setText('Room Id:\n' + this.data.roomId, true);
         this.currentLevel.changeIndex(this.data.levelIndex);
+
+        if (this.data.error) {
+            this.error.setText(this.data.error);
+        }
 
         let foundYou = false;
         for (let i = 0;i < this.playerNames.length;i++) {

@@ -8,7 +8,7 @@ const SoundtrackManager = require('./soundtrack-manager.js');
 const PlayState = require('./play/play-state.js');
 const menu = require('./menu');
 
-let game = new Phaser.Game(conf.GAME_W, conf.GAME_H, Phaser.WEBGL, '');
+let game = new Phaser.Game(conf.GAME_W, conf.GAME_H, Phaser.AUTO, '');
 
 game.global = {
     network: new NetworkManager(game),
