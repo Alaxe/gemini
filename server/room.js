@@ -59,8 +59,10 @@ class Room extends EventEmitter {
         this.players.splice(this.indexOfWS(ws), 1);
 
         if (this.players.length == 0) {
-            this.emit('empty', this.id);   
+            this.emit('empty', this.id);
         } else if (this.playing) {
+            this.playing = false;
+
             let roomData = this.generateRoomUpdate();
             roomData.error = 'A player disconnected';
 

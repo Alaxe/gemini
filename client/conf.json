@@ -27,8 +27,8 @@
             "lobbyError", "roomUpdate", "tileUpdate", "SFXPlay", "startGame"]
     },
     "LevelSelect": {
-        "hCnt": 4,
-        "vCnt": 4
+        "hCnt": 2,
+        "vCnt": 2
     },
     "DiamondCounter": {
         "margin": 10,

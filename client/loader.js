@@ -9,7 +9,7 @@ class Loader {
 
         this.bar = new ui.ProgressBar(this.game, 0.2, 0.45);
 
-        this.initLoading(); 
+        this.initLoading();
         this.load.onFileComplete.add(progress => {
             this.bar.setProgress(progress / 100);
         });
@@ -31,7 +31,7 @@ class Loader {
             this.load.audio(track, `${conf.Soundtrack.root}${track}.ogg`);
         }
         for (let i = 0;i < levelData.length;i++) {
-            this.load.tilemap('map-' + i, levelData[i].path, null, 
+            this.load.tilemap('map-' + i, levelData[i].path, null,
                     Phaser.Tilemap.TILED_JSON);
         }
         this.load.start();

@@ -19,16 +19,12 @@ class LogicBlock {
     }
 
     calcOutput() {
-
         if ((this.hasInput) && (this.tile.index & 1)) {
             this.tile.index++;
         } else if ((!this.hasInput) && ((this.tile.index & 1) == 0)) {
             this.tile.index--;
         }
 
-        if (this.hasInput) {
-
-        }
         const outputIds = [9, 10, 12, 13, 18];
         this.hasOutput = outputIds.includes(this.tile.index);
     }

@@ -1,7 +1,10 @@
 [{
-    "title": "Tutorial",
-    "path": "/assets/levels/tutorial.json"
+    "title": "Tutorial 1",
+    "path": "/assets/levels/level1.json"
+}, {
+    "title": "Tutorial 2",
+    "path": "/assets/levels/level2.json"
 }, {
     "title": "Level 1",
-    "path": "/assets/levels/level1.json"
+    "path": "/assets/levels/level3.json"
 }]

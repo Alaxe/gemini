@@ -23,6 +23,7 @@ class PlayState {
         this.createListeners();
     }
     createObjects() {
+        //this.stage.disableVisibilityChange = true;
         this.stage.backgroundColor = conf.Background.play;
 
         this.physics.startSystem(Phaser.Physics.ARCADE);

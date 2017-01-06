@@ -27,7 +27,29 @@
          "draworder":"topdown",
          "height":40,
          "name":"objects",
-         "objects":[],
+         "objects":[
+                {
+                 "height":64,
+                 "id":17,
+                 "name":"Spawn",
+                 "rotation":0,
+                 "type":"spawn",
+                 "visible":true,
+                 "width":32,
+                 "x":64,
+                 "y":0
+                }, 
+                {
+                 "height":64,
+                 "id":18,
+                 "name":"Spawn",
+                 "rotation":0,
+                 "type":"spawn",
+                 "visible":true,
+                 "width":32,
+                 "x":0,
+                 "y":0
+                }],
          "opacity":1,
          "type":"objectgroup",
          "visible":true,
@@ -35,7 +57,7 @@
          "x":0,
          "y":0
         }],
- "nextobjectid":17,
+ "nextobjectid":19,
  "orientation":"orthogonal",
  "renderorder":"right-down",
  "tileheight":32,
@@ -43,13 +65,13 @@
         {
          "columns":2,
          "firstgid":1,
-         "image":"cables.png",
-         "imageheight":288,
+         "image":"..\/sprites\/cables.png",
+         "imageheight":320,
          "imagewidth":64,
          "margin":0,
          "name":"cables",
          "spacing":0,
-         "tilecount":18,
+         "tilecount":20,
          "tileheight":32,
          "tileproperties":
             {
@@ -277,8 +299,8 @@
         }, 
         {
          "columns":1,
-         "firstgid":19,
-         "image":"platforms.png",
+         "firstgid":21,
+         "image":"..\/sprites\/platforms.png",
          "imageheight":128,
          "imagewidth":32,
          "margin":0,
@@ -304,8 +326,8 @@
         }, 
         {
          "columns":1,
-         "firstgid":23,
-         "image":"diamond.png",
+         "firstgid":25,
+         "image":"..\/sprites\/diamond.png",
          "imageheight":32,
          "imagewidth":32,
          "margin":0,

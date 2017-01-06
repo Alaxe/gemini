@@ -19,12 +19,13 @@ class LevelSelect {
 
         for (let i = 0;i < levelData.length;i++) {
             let gridX = i % conf.LevelSelect.hCnt;
-            let gridY = Math.floor(i / conf.LevelSelect.vCnt);
+            let gridY = Math.floor(i / conf.LevelSelect.hCnt);
 
             let x = startX + gridX * conf.LevelPreview.width;
             let y = startY + gridY * conf.LevelPreview.height;
 
             let cur = new ui.LevelPreview(this.game, x, y, i);
+            console.log(x, y);
 
             cur.onClick.add(() => {
                 this.network.selectLevel(i);
