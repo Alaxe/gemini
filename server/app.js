@@ -35,7 +35,7 @@ let rooms = {};
 
 function generateRoomId() {
     let potential = randomstring.generate({
-        length: 6,
+        length: 4,
         charset: 'alphanumeric',
         capitalization: 'lowercase'
     });

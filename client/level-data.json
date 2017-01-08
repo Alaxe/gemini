@@ -1,10 +1,13 @@
 [{
-    "title": "Tutorial 1",
+    "title": "Level 1",
     "path": "/assets/levels/level1.json"
 }, {
-    "title": "Tutorial 2",
+    "title": "Level 2",
     "path": "/assets/levels/level2.json"
 }, {
-    "title": "Level 1",
+    "title": "Level 3",
     "path": "/assets/levels/level3.json"
+}, {
+    "title": "Sandbox",
+    "path": "/assets/levels/sandbox.json"
 }]
