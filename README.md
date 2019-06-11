@@ -1,7 +1,7 @@
-#Gemini
+# Gemini
 A multplayer puzzle platformer for the web. You can check out the [demo][demo]
 
-##How to install
+## How to install
 1. Install [NodeJS][node]
 2. Clone the repository `git clone https://github.com/Alaxe/gemini`
 3. Install the dependencies `npm install`

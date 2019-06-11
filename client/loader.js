@@ -1,3 +1,4 @@
+'use strict';
 const conf = require('./conf.json');
 const levelData = require('./level-data.json');
 
