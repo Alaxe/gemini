@@ -1,5 +1,5 @@
 # Gemini
-A multplayer puzzle platformer for the web. You can check out the [demo][demo]
+A multplayer puzzle platformer for the web.
 
 ## How to install
 1. Install [NodeJS][node]
