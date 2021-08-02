@@ -4,7 +4,7 @@ const conf = require('./conf.json');
 class NetworkManager {
     constructor(game) {
         this.game = game;
-        this.ws = new WebSocket(`ws://${document.location.hostname}:7001`);
+        this.ws = new WebSocket(`wss://${document.location.hostname}/websocket/`);
 
         this.meanTimeDiff = 0;
         this.meanSampleCnt = 0;
